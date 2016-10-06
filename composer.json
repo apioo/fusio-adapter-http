@@ -13,8 +13,6 @@
   ],
   "require": {
     "php": ">=5.5",
-    "psx/data": "^1.0",
-    "psx/http": "^1.0",
     "fusio/engine": "^0.4@dev"
   },
   "require-dev": {
