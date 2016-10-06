@@ -3,7 +3,7 @@
   "description": "Adapter which can send and proxy HTTP messages",
   "homepage": "http://fusio-project.org",
   "keywords": ["fusio-adapter"],
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "authors": [
     {
       "name": "Christoph Kappestein",
