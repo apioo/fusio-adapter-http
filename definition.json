@@ -1,0 +1,6 @@
+{
+    "actionClass": [
+      "Fusio\\Adapter\\Http\\Action\\HttpProxy",
+      "Fusio\\Adapter\\Http\\Action\\HttpRequest"
+    ]
+}
