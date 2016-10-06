@@ -42,9 +42,7 @@ class HttpProxy extends HttpRequest
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
         $response = $this->executeRequest($request, $configuration, $context);
-
-        $body = (string) $response->getBody();
-        $data = $this->jsonProcessor->read($body);
+        $data     = $this->jsonProcessor->read($response->getBody());
 
         return $this->response->build($response->getStatusCode(), [], $data);
     }
