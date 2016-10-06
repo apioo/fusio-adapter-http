@@ -19,33 +19,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Fusio\Adapter\Http\Action;
+namespace Fusio\Adapter\Http\Tests;
 
-use Fusio\Engine\ContextInterface;
-use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\RequestInterface;
+use Fusio\Engine\Test\DefinitionTestCase;
 
 /**
- * HttpProxy
+ * DefinitionTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpProxy extends HttpRequest
+class DefinitionTest extends DefinitionTestCase
 {
-    public function getName()
+    protected function getDefinition()
     {
-        return 'HTTP-Proxy';
-    }
-
-    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
-    {
-        $response = $this->executeRequest($request, $configuration, $context);
-
-        $body = (string) $response->getBody();
-        $data = $this->jsonProcessor->read($body);
-
-        return $this->response->build($response->getStatusCode(), [], $data);
+        return __DIR__ . '/../definition.json';
     }
 }

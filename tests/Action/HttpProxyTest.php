@@ -24,10 +24,9 @@ namespace Fusio\Adapter\Http\Tests\Action;
 use Fusio\Adapter\Http\Action\HttpProxy;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
+use Fusio\Engine\Http\ClientInterface;
 use Fusio\Engine\ResponseInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
-use PSX\Http\Client;
-use PSX\Http\RequestInterface;
 use PSX\Http\Response;
 use PSX\Http\Stream\StringStream;
 use PSX\Record\Record;
@@ -45,18 +44,21 @@ class HttpProxyTest extends \PHPUnit_Framework_TestCase
 
     public function testHandle()
     {
-        $httpClient = $this->getMock(Client::class, array('request'));
+        $httpClient = $this->getMockBuilder(ClientInterface::class)
+            ->setMethods(['request'])
+            ->getMock();
+
         $httpClient->expects($this->once())
             ->method('request')
-            ->with($this->callback(function ($request) {
-                /** @var \PSX\Http\RequestInterface $request */
-                $this->assertInstanceOf(RequestInterface::class, $request);
-                $this->assertEquals('application/json', $request->getHeader('Content-Type'));
-                $this->assertEquals('foo', $request->getHeader('X-Api-Key'));
-                $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', (string) $request->getBody());
-
-                return true;
-            }))
+            ->with(
+                $this->equalTo('http://127.0.0.1/bar'),
+                $this->equalTo('POST'),
+                $this->equalTo(['Content-Type' => 'application/json', 'X-Api-Key' => 'foo', 'User-Agent' => 'Fusio-Http-Adapter']),
+                $this->callback(function ($body) {
+                    $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $body);
+                    return true;
+                })
+            )
             ->will($this->returnValue(new Response(200, [], new StringStream(json_encode(['bar' => 'foo'])))));
 
         $parameters = $this->getParameters([
@@ -69,7 +71,9 @@ class HttpProxyTest extends \PHPUnit_Framework_TestCase
             'foo' => 'bar'
         ]);
 
-        $action   = $this->getActionFactory()->factory(HttpProxy::class);
+        $action = $this->getActionFactory()->factory(HttpProxy::class);
+        $action->setHttpClient($httpClient);
+
         $response = $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
 
         $body = (object) ['bar' => 'foo'];

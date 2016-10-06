@@ -21,17 +21,12 @@
 
 namespace Fusio\Adapter\Http\Action;
 
-use Fusio\Engine\ActionInterface;
+use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
-use Fusio\Engine\Response\FactoryInterface as ResponseFactoryInterface;
-use Fusio\Engine\Template\FactoryInterface;
-use PSX\Http\Client;
-use PSX\Http\Request;
-use PSX\Uri\Url;
 
 /**
  * HttpRequest
@@ -40,26 +35,8 @@ use PSX\Uri\Url;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpRequest implements ActionInterface
+class HttpRequest extends ActionAbstract
 {
-    /**
-     * @Inject
-     * @var \PSX\Http\ClientInterface
-     */
-    protected $httpClient;
-
-    /**
-     * @Inject
-     * @var \Fusio\Engine\Template\FactoryInterface
-     */
-    protected $templateFactory;
-
-    /**
-     * @Inject
-     * @var \Fusio\Engine\Response\FactoryInterface
-     */
-    protected $response;
-
     public function getName()
     {
         return 'HTTP-Request';
@@ -91,21 +68,6 @@ class HttpRequest implements ActionInterface
         $builder->add($elementFactory->newSelect('method', 'Method', $methods, 'The used request method'));
         $builder->add($elementFactory->newInput('headers', 'Headers', 'text', 'Optional request headers i.e.: <code>User-Agent=foo&X-Api-Key=bar</code>'));
         $builder->add($elementFactory->newTextArea('body', 'Body', 'text', 'The request body. Inside the body it is possible to use a template syntax to add dynamic data. Click <a ng-click="help.showDialog(\'help/template.md\')">here</a> for more informations about the template syntax.'));
-    }
-
-    public function setHttpClient(Client $httpClient)
-    {
-        $this->httpClient = $httpClient;
-    }
-
-    public function setTemplateFactory(FactoryInterface $templateFactory)
-    {
-        $this->templateFactory = $templateFactory;
-    }
-
-    public function setResponse(ResponseFactoryInterface $response)
-    {
-        $this->response = $response;
     }
 
     protected function parserHeaders($data)
@@ -152,8 +114,7 @@ class HttpRequest implements ActionInterface
         $method   = $configuration->get('method') ?: 'POST';
         $headers  = $this->parserHeaders($configuration->get('headers'));
         $url      = $this->parseUrl($configuration->get('url'), $request);
-        $request  = new Request(new Url($url), $method, $headers, $body);
 
-        return $this->httpClient->request($request);
+        return $this->httpClient->request($url, $method, $headers, $body);
     }
 }
