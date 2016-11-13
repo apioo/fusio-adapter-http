@@ -27,6 +27,8 @@ use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
+use PSX\Data\Record\Transformer;
+use PSX\Json\Parser;
 
 /**
  * HttpRequest
@@ -67,7 +69,6 @@ class HttpRequest extends ActionAbstract
         $builder->add($elementFactory->newInput('url', 'Url', 'text', 'Sends a HTTP request to the given url'));
         $builder->add($elementFactory->newSelect('method', 'Method', $methods, 'The used request method'));
         $builder->add($elementFactory->newInput('headers', 'Headers', 'text', 'Optional request headers i.e.: <code>User-Agent=foo&X-Api-Key=bar</code>'));
-        $builder->add($elementFactory->newTextArea('body', 'Body', 'text', 'The request body. Inside the body it is possible to use a template syntax to add dynamic data. Click <a ng-click="help.showDialog(\'help/template.md\')">here</a> for more informations about the template syntax.'));
     }
 
     protected function parserHeaders($data)
@@ -106,14 +107,15 @@ class HttpRequest extends ActionAbstract
 
     protected function executeRequest(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
-        // parse body
-        $parser = $this->templateFactory->newTextParser();
-        $body   = $parser->parse($request, $context, $configuration->get('body'));
-
-        // build request
         $method   = $configuration->get('method') ?: 'POST';
         $headers  = $this->parserHeaders($configuration->get('headers'));
         $url      = $this->parseUrl($configuration->get('url'), $request);
+
+        if ($method != 'GET') {
+            $body = Parser::encode(Transformer::toStdClass($request->getBody()), JSON_PRETTY_PRINT);
+        } else {
+            $body = null;
+        }
 
         return $this->httpClient->request($url, $method, $headers, $body);
     }
