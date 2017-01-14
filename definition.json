@@ -1,6 +1,5 @@
 {
-    "actionClass": [
-      "Fusio\\Adapter\\Http\\Action\\HttpProxy",
-      "Fusio\\Adapter\\Http\\Action\\HttpRequest"
+    "connectionClass": [
+      "Fusio\\Adapter\\Http\\Connection\\Http"
     ]
 }
