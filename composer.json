@@ -1,6 +1,6 @@
 {
   "name": "fusio/adapter-http",
-  "description": "Adapter which can send and proxy HTTP messages",
+  "description": "Provides a connection to send and HTTP messages",
   "homepage": "http://fusio-project.org",
   "keywords": ["fusio-adapter"],
   "license": "AGPL-3.0",
