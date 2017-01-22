@@ -48,7 +48,11 @@ class Http implements ConnectionInterface
     public function getConnection(ParametersInterface $config)
     {
         $options = [];
-        $options['base_uri'] = $config->get('url');
+
+        $baseUri = $config->get('url');
+        if (!empty($baseUri)) {
+            $options['base_uri'] = $config->get('url');
+        }
 
         $username = $config->get('username');
         $password = $config->get('password');
