@@ -1,6 +1,6 @@
 {
   "name": "fusio/adapter-http",
-  "description": "Provides a connection to send and HTTP messages",
+  "description": "Provides a connection to send and retrieve HTTP messages",
   "homepage": "http://fusio-project.org",
   "keywords": ["fusio-adapter"],
   "license": "AGPL-3.0",
