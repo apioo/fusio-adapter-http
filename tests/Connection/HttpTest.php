@@ -42,8 +42,8 @@ class HttpTest extends \PHPUnit_Framework_TestCase
 
     public function testGetConnection()
     {
-        /** @var Http $connection */
-        $connection = $this->getConnectionFactory()->factory(Http::class);
+        /** @var Http $connectionFactory */
+        $connectionFactory = $this->getConnectionFactory()->factory(Http::class);
 
         $config = new Parameters([
             'url'      => 'http://phpsx.org',
@@ -52,9 +52,9 @@ class HttpTest extends \PHPUnit_Framework_TestCase
             'proxy'    => '',
         ]);
 
-        $client = $connection->getConnection($config);
+        $connection = $connectionFactory->getConnection($config);
 
-        $this->assertInstanceOf(Client::class, $client);
+        $this->assertInstanceOf(Client::class, $connection);
     }
 
     public function testConfigure()
@@ -73,5 +73,22 @@ class HttpTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Input::class, $elements[1]);
         $this->assertInstanceOf(Input::class, $elements[2]);
         $this->assertInstanceOf(Input::class, $elements[3]);
+    }
+
+    public function testPing()
+    {
+        /** @var Http $connectionFactory */
+        $connectionFactory = $this->getConnectionFactory()->factory(Http::class);
+
+        $config = new Parameters([
+            'url'      => 'http://phpsx.org',
+            'username' => '',
+            'password' => '',
+            'proxy'    => '',
+        ]);
+
+        $connection = $connectionFactory->getConnection($config);
+
+        $this->assertTrue($connectionFactory->ping($connection));
     }
 }
