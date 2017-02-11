@@ -82,9 +82,7 @@ class Http implements ConnectionInterface, PingableInterface
     public function ping($connection)
     {
         if ($connection instanceof GuzzleHttp\Client) {
-            $response = $connection->head('/', [
-                'http_errors' => false
-            ]);
+            $response = $connection->get('/');
 
             return $response->getStatusCode() >= 200 && $response->getStatusCode() < 300;
         } else {
