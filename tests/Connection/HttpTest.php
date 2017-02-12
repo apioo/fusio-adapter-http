@@ -46,7 +46,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
         $connectionFactory = $this->getConnectionFactory()->factory(Http::class);
 
         $config = new Parameters([
-            'url'      => 'http://phpsx.org',
+            'url'      => 'http://httpbin.org/',
             'username' => '',
             'password' => '',
             'proxy'    => '',
@@ -81,7 +81,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
         $connectionFactory = $this->getConnectionFactory()->factory(Http::class);
 
         $config = new Parameters([
-            'url'      => 'http://phpsx.org',
+            'url'      => 'http://httpbin.org/',
             'username' => '',
             'password' => '',
             'proxy'    => '',
