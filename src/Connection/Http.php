@@ -21,7 +21,6 @@
 
 namespace Fusio\Adapter\Http\Connection;
 
-use Fusio\Engine\Connection\PingableInterface;
 use Fusio\Engine\ConnectionInterface;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
@@ -35,7 +34,7 @@ use GuzzleHttp;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class Http implements ConnectionInterface, PingableInterface
+class Http implements ConnectionInterface
 {
     public function getName()
     {
@@ -77,16 +76,5 @@ class Http implements ConnectionInterface, PingableInterface
         $builder->add($elementFactory->newInput('username', 'Username', 'text', 'Optional username for authentication'));
         $builder->add($elementFactory->newInput('password', 'Password', 'text', 'Optional password for authentication'));
         $builder->add($elementFactory->newInput('proxy', 'Proxy', 'text', 'Optional HTTP proxy'));
-    }
-
-    public function ping($connection)
-    {
-        if ($connection instanceof GuzzleHttp\Client) {
-            $response = $connection->get('/');
-
-            return $response->getStatusCode() >= 200 && $response->getStatusCode() < 300;
-        } else {
-            return false;
-        }
     }
 }

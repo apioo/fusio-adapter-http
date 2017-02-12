@@ -74,21 +74,4 @@ class HttpTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Input::class, $elements[2]);
         $this->assertInstanceOf(Input::class, $elements[3]);
     }
-
-    public function testPing()
-    {
-        /** @var Http $connectionFactory */
-        $connectionFactory = $this->getConnectionFactory()->factory(Http::class);
-
-        $config = new Parameters([
-            'url'      => 'http://httpbin.org/',
-            'username' => '',
-            'password' => '',
-            'proxy'    => '',
-        ]);
-
-        $connection = $connectionFactory->getConnection($config);
-
-        $this->assertTrue($connectionFactory->ping($connection));
-    }
 }
