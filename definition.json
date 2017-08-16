@@ -1,5 +1,8 @@
 {
-    "connectionClass": [
-      "Fusio\\Adapter\\Http\\Connection\\Http"
-    ]
+  "actionClass": [
+    "Fusio\\Adapter\\Http\\Action\\HttpProcessor"
+  ],
+  "connectionClass": [
+    "Fusio\\Adapter\\Http\\Connection\\Http"
+  ]
 }
