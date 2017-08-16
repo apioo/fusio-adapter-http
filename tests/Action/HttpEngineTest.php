@@ -93,10 +93,6 @@ JSON;
         $transaction = reset($transactions);
 
         $headers = [
-            'Content-Length' => ['13'],
-            'User-Agent' => ['GuzzleHttp/6.2.1 curl/7.50.1 PHP/7.0.11'],
-            'Host' => ['127.0.0.1'],
-            'content-type' => ['application/json'],
             'X-Fusio-Route-Id' => ['34'],
             'X-Fusio-User-Anonymous' => ['0'],
             'X-Fusio-User-Id' => ['2'],
@@ -107,7 +103,7 @@ JSON;
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
         $this->assertEquals('http://127.0.0.1?foo=bar', $transaction['request']->getUri()->__toString());
-        $this->assertEquals($headers, $transaction['request']->getHeaders());
+        $this->assertEquals($headers, $this->getXHeaders($transaction['request']->getHeaders()));
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
@@ -150,10 +146,6 @@ JSON;
         $transaction = reset($transactions);
 
         $headers = [
-            'Content-Length' => ['13'],
-            'User-Agent' => ['GuzzleHttp/6.2.1 curl/7.50.1 PHP/7.0.11'],
-            'Host' => ['127.0.0.1'],
-            'content-type' => ['application/json'],
             'X-Fusio-Route-Id' => ['34'],
             'X-Fusio-User-Anonymous' => ['0'],
             'X-Fusio-User-Id' => ['2'],
@@ -164,7 +156,7 @@ JSON;
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
         $this->assertEquals('http://127.0.0.1?foo=bar', $transaction['request']->getUri()->__toString());
-        $this->assertEquals($headers, $transaction['request']->getHeaders());
+        $this->assertEquals($headers, $this->getXHeaders($transaction['request']->getHeaders()));
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
@@ -177,5 +169,17 @@ JSON;
         $action->configure($builder, $factory);
 
         $this->assertInstanceOf(Container::class, $builder->getForm());
+    }
+
+    private function getXHeaders(array $headers)
+    {
+        $result = [];
+        foreach ($headers as $name => $header) {
+            if (substr($name, 0, 2) == 'X-') {
+                $result[$name] = $header;
+            }
+        }
+
+        return $result;
     }
 }
