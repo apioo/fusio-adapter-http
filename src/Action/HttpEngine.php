@@ -26,6 +26,7 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
+use PSX\Data\Record\Transformer;
 use PSX\Http\MediaType;
 
 /**
@@ -37,10 +38,18 @@ use PSX\Http\MediaType;
  */
 class HttpEngine extends ActionAbstract
 {
+    const TYPE_JSON = 'application/json';
+    const TYPE_FORM = 'application/x-www-form-urlencoded';
+
     /**
      * @var string
      */
     protected $url;
+
+    /**
+     * @var string
+     */
+    protected $type;
 
     /**
      * @var \GuzzleHttp\Client
@@ -58,6 +67,11 @@ class HttpEngine extends ActionAbstract
         $this->url = $url;
     }
 
+    public function setType($type)
+    {
+        $this->type = $type;
+    }
+
     public function setClient(Client $client)
     {
         $this->client = $client;
@@ -73,23 +87,40 @@ class HttpEngine extends ActionAbstract
         $headers['X-Fusio-App-Key'] = $context->getApp()->getAppKey();
         $headers['X-Fusio-Remote-Ip'] = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
 
-        $response = $this->client->request($request->getMethod(), $this->url, [
+        $options = [
             'headers' => $headers,
             'query' => $request->getParameters()->toArray(),
-            'json' => $request->getBody(),
             'http_errors' => false,
-        ]);
+        ];
 
-        if ($this->isJson($response->getHeaderLine('Content-Type'))) {
-            $body = json_decode($response->getBody());
+        if ($this->type == self::TYPE_FORM) {
+            $options['form_params'] = Transformer::toArray($request->getBody());
         } else {
-            $body = $response->getBody()->__toString();
+            $options['json'] = $request->getBody();
+        }
+
+        $response    = $this->client->request($request->getMethod(), $this->url, $options);
+        $contentType = $response->getHeaderLine('Content-Type');
+        $response    = $response->withoutHeader('Content-Type');
+        $body        = (string) $response->getBody();
+
+        if ($this->isJson($contentType)) {
+            $data = json_decode($body);
+        } elseif (strpos($contentType, self::TYPE_FORM) !== false) {
+            $data = [];
+            parse_str($body, $data);
+        } else {
+            if (!empty($contentType)) {
+                $response = $response->withHeader('Content-Type', $contentType);
+            }
+
+            $data = $body;
         }
 
         return $this->response->build(
             $response->getStatusCode(),
             $response->getHeaders(),
-            $body
+            $data
         );
     }
 

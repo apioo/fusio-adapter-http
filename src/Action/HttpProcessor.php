@@ -44,12 +44,19 @@ class HttpProcessor extends HttpEngine
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
         $this->setUrl($configuration->get('url'));
+        $this->setType($configuration->get('type'));
 
         return parent::handle($request, $configuration, $context);
     }
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
     {
+        $options = [
+            self::TYPE_JSON => self::TYPE_JSON,
+            self::TYPE_FORM => self::TYPE_FORM,
+        ];
+
         $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Click <a ng-click="help.showDialog(\'help/action/http.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newSelect('type', 'Content-Type', $options, 'The content type which you want to send to the endpoint.'));
     }
 }

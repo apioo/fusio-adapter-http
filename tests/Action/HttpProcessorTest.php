@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Http\Tests\Action;
 
 use Fusio\Adapter\Http\Action\HttpEngine;
+use Fusio\Adapter\Http\Action\HttpProcessor;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
 use Fusio\Engine\ResponseInterface;
@@ -34,13 +35,13 @@ use GuzzleHttp\Psr7\Response;
 use PSX\Record\Record;
 
 /**
- * HttpEngineTest
+ * HttpProcessorTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpEngineTest extends \PHPUnit_Framework_TestCase
+class HttpProcessorTest extends \PHPUnit_Framework_TestCase
 {
     use EngineTestCaseTrait;
 
@@ -62,8 +63,7 @@ class HttpEngineTest extends \PHPUnit_Framework_TestCase
         $handler->push($history);
         $client = new Client(['handler' => $handler]);
 
-        $action = $this->getActionFactory()->factory(HttpEngine::class);
-        $action->setUrl('http://127.0.0.1');
+        $action = $this->getActionFactory()->factory(HttpProcessor::class);
         $action->setClient($client);
 
         // handle request
@@ -75,7 +75,7 @@ class HttpEngineTest extends \PHPUnit_Framework_TestCase
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar'])
             ),
-            $this->getParameters(),
+            $this->getParameters(['url' => 'http://127.0.0.1']),
             $this->getContext()
         );
 
@@ -120,9 +120,7 @@ JSON;
         $handler->push($history);
         $client = new Client(['handler' => $handler]);
 
-        $action = $this->getActionFactory()->factory(HttpEngine::class);
-        $action->setUrl('http://127.0.0.1');
-        $action->setType(HttpEngine::TYPE_FORM);
+        $action = $this->getActionFactory()->factory(HttpProcessor::class);
         $action->setClient($client);
 
         // handle request
@@ -134,7 +132,7 @@ JSON;
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar', 'x' => 'bar'])
             ),
-            $this->getParameters(),
+            $this->getParameters(['url' => 'http://127.0.0.1', 'type' => HttpEngine::TYPE_FORM]),
             $this->getContext()
         );
 
@@ -179,8 +177,7 @@ JSON;
         $handler->push($history);
         $client = new Client(['handler' => $handler]);
 
-        $action = $this->getActionFactory()->factory(HttpEngine::class);
-        $action->setUrl('http://127.0.0.1');
+        $action = $this->getActionFactory()->factory(HttpProcessor::class);
         $action->setClient($client);
 
         // handle request
@@ -192,7 +189,7 @@ JSON;
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar'])
             ),
-            $this->getParameters(),
+            $this->getParameters(['url' => 'http://127.0.0.1']),
             $this->getContext()
         );
 
@@ -221,7 +218,7 @@ JSON;
 
     public function testGetForm()
     {
-        $action  = $this->getActionFactory()->factory(HttpEngine::class);
+        $action  = $this->getActionFactory()->factory(HttpProcessor::class);
         $builder = new Builder();
         $factory = $this->getFormElementFactory();
 
