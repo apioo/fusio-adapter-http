@@ -93,12 +93,14 @@ JSON;
         $transaction = reset($transactions);
 
         $headers = [
-            'X-Fusio-Route-Id' => ['34'],
-            'X-Fusio-User-Anonymous' => ['0'],
-            'X-Fusio-User-Id' => ['2'],
-            'X-Fusio-App-Id' => ['3'],
-            'X-Fusio-App-Key' => ['5347307d-d801-4075-9aaa-a21a29a448c5'],
-            'X-Fusio-Remote-Ip' => ['127.0.0.1'],
+            'x-fusio-route-id' => ['34'],
+            'x-fusio-user-anonymous' => ['0'],
+            'x-fusio-user-id' => ['2'],
+            'x-fusio-app-id' => ['3'],
+            'x-fusio-app-key' => ['5347307d-d801-4075-9aaa-a21a29a448c5'],
+            'x-fusio-remote-ip' => ['127.0.0.1'],
+            'x-forwarded-for' => ['127.0.0.1'],
+            'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
         ];
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
@@ -150,12 +152,14 @@ JSON;
         $transaction = reset($transactions);
 
         $headers = [
-            'X-Fusio-Route-Id' => ['34'],
-            'X-Fusio-User-Anonymous' => ['0'],
-            'X-Fusio-User-Id' => ['2'],
-            'X-Fusio-App-Id' => ['3'],
-            'X-Fusio-App-Key' => ['5347307d-d801-4075-9aaa-a21a29a448c5'],
-            'X-Fusio-Remote-Ip' => ['127.0.0.1'],
+            'x-fusio-route-id' => ['34'],
+            'x-fusio-user-anonymous' => ['0'],
+            'x-fusio-user-id' => ['2'],
+            'x-fusio-app-id' => ['3'],
+            'x-fusio-app-key' => ['5347307d-d801-4075-9aaa-a21a29a448c5'],
+            'x-fusio-remote-ip' => ['127.0.0.1'],
+            'x-forwarded-for' => ['127.0.0.1'],
+            'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
         ];
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
@@ -202,12 +206,14 @@ JSON;
         $transaction = reset($transactions);
 
         $headers = [
-            'X-Fusio-Route-Id' => ['34'],
-            'X-Fusio-User-Anonymous' => ['0'],
-            'X-Fusio-User-Id' => ['2'],
-            'X-Fusio-App-Id' => ['3'],
-            'X-Fusio-App-Key' => ['5347307d-d801-4075-9aaa-a21a29a448c5'],
-            'X-Fusio-Remote-Ip' => ['127.0.0.1'],
+            'x-fusio-route-id' => ['34'],
+            'x-fusio-user-anonymous' => ['0'],
+            'x-fusio-user-id' => ['2'],
+            'x-fusio-app-id' => ['3'],
+            'x-fusio-app-key' => ['5347307d-d801-4075-9aaa-a21a29a448c5'],
+            'x-fusio-remote-ip' => ['127.0.0.1'],
+            'x-forwarded-for' => ['127.0.0.1'],
+            'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
         ];
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
@@ -231,7 +237,7 @@ JSON;
     {
         $result = [];
         foreach ($headers as $name => $header) {
-            if (substr($name, 0, 2) == 'X-') {
+            if (!in_array($name, ['Content-Length', 'User-Agent', 'Content-Type', 'Host'])) {
                 $result[$name] = $header;
             }
         }

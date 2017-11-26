@@ -79,13 +79,30 @@ class HttpEngine extends ActionAbstract
 
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
+        $clientIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+
+        $exclude = ['accept', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
         $headers = $request->getHeaders();
-        $headers['X-Fusio-Route-Id'] = '' . $context->getRouteId();
-        $headers['X-Fusio-User-Anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
-        $headers['X-Fusio-User-Id'] = '' . $context->getUser()->getId();
-        $headers['X-Fusio-App-Id'] = '' . $context->getApp()->getId();
-        $headers['X-Fusio-App-Key'] = $context->getApp()->getAppKey();
-        $headers['X-Fusio-Remote-Ip'] = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+        $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
+
+        $headers['x-fusio-route-id'] = '' . $context->getRouteId();
+        $headers['x-fusio-user-anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
+        $headers['x-fusio-user-id'] = '' . $context->getUser()->getId();
+        $headers['x-fusio-app-id'] = '' . $context->getApp()->getId();
+        $headers['x-fusio-app-key'] = $context->getApp()->getAppKey();
+        $headers['x-fusio-remote-ip'] = $clientIp;
+        $headers['x-forwarded-for'] = $clientIp;
+        $headers['accept'] = 'application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8';
+
+        $host = $request->getHeader('Host');
+        if (!empty($host)) {
+            $headers['x-forwarded-host'] = $host;
+        }
+
+        $auth = $request->getHeader('Proxy-Authorization');
+        if (!empty($auth)) {
+            $headers['authorization'] = $auth;
+        }
 
         $options = [
             'headers' => $headers,
