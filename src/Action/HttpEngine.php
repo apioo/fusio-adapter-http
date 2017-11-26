@@ -81,7 +81,7 @@ class HttpEngine extends ActionAbstract
     {
         $clientIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
 
-        $exclude = ['accept', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
+        $exclude = ['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
         $headers = $request->getHeaders();
         $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
 
