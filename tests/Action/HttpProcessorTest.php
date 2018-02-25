@@ -25,13 +25,13 @@ use Fusio\Adapter\Http\Action\HttpEngine;
 use Fusio\Adapter\Http\Action\HttpProcessor;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
-use Fusio\Engine\ResponseInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Record\Record;
 
 /**
@@ -84,7 +84,7 @@ class HttpProcessorTest extends \PHPUnit_Framework_TestCase
 {"foo":"bar","bar":"foo"}
 JSON;
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
@@ -143,7 +143,7 @@ JSON;
 {"foo":"bar","bar":"foo"}
 JSON;
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
@@ -197,7 +197,7 @@ JSON;
             $this->getContext()
         );
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals(['x-foo' => ['Foo'], 'content-type' => ['application/xml']], $response->getHeaders());
         $this->assertEquals('<foo>response</foo>', $response->getBody());
