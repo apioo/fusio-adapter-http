@@ -106,12 +106,12 @@ class HttpEngine extends ActionAbstract
 
         $options = [
             'headers' => $headers,
-            'query' => $request->getParameters()->toArray(),
+            'query' => $request->getParameters(),
             'http_errors' => false,
         ];
 
         if ($this->type == self::TYPE_FORM) {
-            $options['form_params'] = Transformer::toArray($request->getBody());
+            $options['form_params'] = json_decode(json_encode($request->getBody()), true);
         } else {
             $options['json'] = $request->getBody();
         }
