@@ -27,6 +27,7 @@ use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
 use PSX\Http\MediaType;
+use PSX\Record\Transformer;
 
 /**
  * HttpEngine
@@ -110,7 +111,7 @@ class HttpEngine extends ActionAbstract
         ];
 
         if ($this->type == self::TYPE_FORM) {
-            $options['form_params'] = json_decode(json_encode($request->getBody()), true);
+            $options['form_params'] = Transformer::toArray($request->getBody());
         } else {
             $options['json'] = $request->getBody();
         }
