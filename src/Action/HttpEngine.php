@@ -26,7 +26,6 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
-use PSX\Data\Record\Transformer;
 use PSX\Http\MediaType;
 
 /**
