@@ -30,6 +30,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\TestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Record\Record;
 
@@ -40,7 +41,7 @@ use PSX\Record\Record;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpEngineTest extends \PHPUnit_Framework_TestCase
+class HttpEngineTest extends TestCase
 {
     use EngineTestCaseTrait;
 
