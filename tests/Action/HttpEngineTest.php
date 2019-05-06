@@ -226,6 +226,66 @@ JSON;
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
+    public function testHandleVariablePathFragment()
+    {
+        $transactions = [];
+        $history = Middleware::history($transactions);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], json_encode(['foo' => 'bar', 'bar' => 'foo'])),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $handler->push($history);
+        $client = new Client(['handler' => $handler]);
+
+        $action = $this->getActionFactory()->factory(HttpEngine::class);
+        $action->setUrl('http://127.0.0.1/foo/:foo');
+        $action->setClient($client);
+
+        // handle request
+        $response = $action->handle(
+            $this->getRequest(
+                'GET',
+                ['foo' => 'bar'],
+                ['foo' => 'bar'],
+                ['Content-Type' => 'application/json'],
+                Record::fromArray(['foo' => 'bar'])
+            ),
+            $this->getParameters(),
+            $this->getContext()
+        );
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{"foo":"bar","bar":"foo"}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+
+        $this->assertEquals(1, count($transactions));
+        $transaction = reset($transactions);
+
+        $headers = [
+            'x-fusio-route-id' => ['34'],
+            'x-fusio-user-anonymous' => ['0'],
+            'x-fusio-user-id' => ['2'],
+            'x-fusio-app-id' => ['3'],
+            'x-fusio-app-key' => ['5347307d-d801-4075-9aaa-a21a29a448c5'],
+            'x-fusio-remote-ip' => ['127.0.0.1'],
+            'x-forwarded-for' => ['127.0.0.1'],
+            'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
+        ];
+
+        $this->assertEquals('GET', $transaction['request']->getMethod());
+        $this->assertEquals('http://127.0.0.1/foo/bar?foo=bar', $transaction['request']->getUri()->__toString());
+        $this->assertEquals($headers, $this->getXHeaders($transaction['request']->getHeaders()));
+        $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
+    }
+
     public function testGetForm()
     {
         $action  = $this->getActionFactory()->factory(HttpEngine::class);

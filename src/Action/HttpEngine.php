@@ -116,7 +116,15 @@ class HttpEngine extends ActionAbstract
             $options['json'] = $request->getBody();
         }
 
-        $response    = $this->client->request($request->getMethod(), $this->url, $options);
+        $url = $this->url;
+        $uriFragments = $request->getUriFragments();
+        if (!empty($uriFragments)) {
+            foreach ($uriFragments as $name => $value) {
+                $url = str_replace(':' . $name, $value, $url);
+            }
+        }
+
+        $response    = $this->client->request($request->getMethod(), $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
         $body        = (string) $response->getBody();
