@@ -124,7 +124,7 @@ class HttpEngine extends ActionAbstract
             'http_errors' => false,
         ];
 
-        if(!empty($this->version)) {
+        if (!empty($this->version)) {
             $options['version'] = $this->version;
         }
 
