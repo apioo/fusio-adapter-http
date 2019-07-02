@@ -46,6 +46,10 @@ class HttpProcessor extends HttpEngine
         $this->setUrl($configuration->get('url'));
         $this->setType($configuration->get('type'));
 
+        if (!empty($configuration->get('version'))) {
+            $this->setVersion($configuration->get('version'));
+        }
+
         return parent::handle($request, $configuration, $context);
     }
 
@@ -56,7 +60,15 @@ class HttpProcessor extends HttpEngine
             self::TYPE_FORM => self::TYPE_FORM,
         ];
 
+        $httpOptions = [
+            self::HTTP_1_0 => self::HTTP_1_0,
+            self::HTTP_1_1 => self::HTTP_1_1,
+            self::HTTP_2_0 => self::HTTP_2_0,
+        ];
+
         $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Click <a ng-click="help.showDialog(\'help/action/http.md\')">here</a> for more information.'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', $options, 'The content type which you want to send to the endpoint.'));
+        $builder->add($elementFactory->newSelect('version', 'HTTP Version', $httpOptions, 'Optional http protocol which you want to send to the endpoint.'));
+
     }
 }
