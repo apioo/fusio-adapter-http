@@ -41,6 +41,10 @@ class HttpEngine extends ActionAbstract
     const TYPE_JSON = 'application/json';
     const TYPE_FORM = 'application/x-www-form-urlencoded';
 
+    const HTTP_1_0 = '1.0';
+    const HTTP_1_1 = '1.1';
+    const HTTP_2_0 = '2.0';
+
     /**
      * @var string
      */
@@ -50,6 +54,11 @@ class HttpEngine extends ActionAbstract
      * @var string
      */
     protected $type;
+
+    /**
+     * @var string
+     */
+    protected $version;
 
     /**
      * @var \GuzzleHttp\Client
@@ -70,6 +79,11 @@ class HttpEngine extends ActionAbstract
     public function setType($type)
     {
         $this->type = $type;
+    }
+
+    public function setVersion($version)
+    {
+        $this->version = $version;
     }
 
     public function setClient(Client $client)
@@ -109,6 +123,10 @@ class HttpEngine extends ActionAbstract
             'query' => $request->getParameters(),
             'http_errors' => false,
         ];
+
+        if(!empty($this->version)) {
+            $options['version'] = $this->version;
+        }
 
         if ($this->type == self::TYPE_FORM) {
             $options['form_params'] = Transformer::toArray($request->getBody());
