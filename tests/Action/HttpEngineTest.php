@@ -40,7 +40,7 @@ class HttpEngineTest extends HttpTestCase
 {
     use EngineTestCaseTrait;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }
