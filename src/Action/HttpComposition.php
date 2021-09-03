@@ -28,34 +28,47 @@ use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 
 /**
- * HttpProcessor
+ * HttpComposition
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpProcessor extends HttpEngine
+class HttpComposition extends HttpEngine
 {
     public function getName()
     {
-        return 'HTTP-Processor';
+        return 'HTTP-Composition';
     }
 
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
-        $this->setUrl($configuration->get('url'));
-        $this->setType($configuration->get('type'));
+        $urls = $configuration->get('url');
+        $data = [];
 
-        if (!empty($configuration->get('version'))) {
-            $this->setVersion($configuration->get('version'));
+        foreach ($urls as $url) {
+            $this->setUrl($url);
+            $this->setType($configuration->get('type'));
+
+            if (!empty($configuration->get('version'))) {
+                $this->setVersion($configuration->get('version'));
+            }
+
+            $response = parent::handle($request, $configuration, $context);
+
+            $data[$url] = $response->getBody();
         }
 
-        return parent::handle($request, $configuration, $context);
+        return $this->response->build(
+            200,
+            [],
+            $data
+        );
     }
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
     {
-        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Click <a ng-click="help.showDialog(\'help/action/http.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newTag('url', 'URL', 'Calls multiple defined urls and returns a composite result of every call'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
     }

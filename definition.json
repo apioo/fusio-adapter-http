@@ -1,5 +1,7 @@
 {
   "actionClass": [
+    "Fusio\\Adapter\\Http\\Action\\HttpComposition",
+    "Fusio\\Adapter\\Http\\Action\\HttpLoadBalancer",
     "Fusio\\Adapter\\Http\\Action\\HttpProcessor"
   ],
   "connectionClass": [

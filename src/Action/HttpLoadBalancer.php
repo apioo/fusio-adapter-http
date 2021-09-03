@@ -28,22 +28,29 @@ use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 
 /**
- * HttpProcessor
+ * HttpLoadBalancer
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpProcessor extends HttpEngine
+class HttpLoadBalancer extends HttpEngine
 {
     public function getName()
     {
-        return 'HTTP-Processor';
+        return 'HTTP-Load-Balancer';
     }
 
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
-        $this->setUrl($configuration->get('url'));
+        $urls = $configuration->get('url');
+        $url = $urls[array_rand($urls)] ?? null;
+
+        if (empty($url)) {
+            throw new \RuntimeException('No fitting url configured');
+        }
+
+        $this->setUrl($url);
         $this->setType($configuration->get('type'));
 
         if (!empty($configuration->get('version'))) {
@@ -55,7 +62,7 @@ class HttpProcessor extends HttpEngine
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
     {
-        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Click <a ng-click="help.showDialog(\'help/action/http.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newTag('url', 'URL', 'Multiple urls which are called randomly for load balancing'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
     }
