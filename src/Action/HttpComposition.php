@@ -44,6 +44,7 @@ class HttpComposition extends HttpEngine
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
         $urls = $configuration->get('url');
+        $headers = [];
         $data = [];
 
         foreach ($urls as $url) {
@@ -56,12 +57,16 @@ class HttpComposition extends HttpEngine
 
             $response = parent::handle($request, $configuration, $context);
 
+            foreach ($response->getHeaders() as $key => $value) {
+                $headers[$key] = $value;
+            }
+
             $data[$url] = $response->getBody();
         }
 
         return $this->response->build(
             200,
-            [],
+            $headers,
             $data
         );
     }

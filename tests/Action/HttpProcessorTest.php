@@ -29,7 +29,6 @@ use Fusio\Engine\Form\Container;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
-use PHPUnit\Framework\TestCase;
 
 /**
  * HttpProcessorTest
@@ -38,33 +37,12 @@ use PHPUnit\Framework\TestCase;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpProcessorTest extends TestCase
+class HttpProcessorTest extends HttpTestCase
 {
     use EngineTestCaseTrait;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
-    public function testGetForm()
-    {
-        $action  = $this->getActionFactory()->factory(HttpProcessor::class);
-        $builder = new Builder();
-        $factory = $this->getFormElementFactory();
-
-        $action->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
-    }
 
     protected function getActionClass()
     {
         return HttpProcessor::class;
-    }
-
-    protected function handle(HttpEngine $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
-    {
-        return $action->handle($request, $configuration, $context);
     }
 }

@@ -21,6 +21,7 @@
 
 namespace Fusio\Adapter\Http\Tests\Action;
 
+use Fusio\Adapter\Http\Action\HttpComposition;
 use Fusio\Adapter\Http\Action\HttpEngine;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Form\Builder;
@@ -30,37 +31,43 @@ use Fusio\Engine\RequestInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 
 /**
- * HttpEngineTest
+ * HttpCompositeTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class HttpEngineTest extends HttpTestCase
+class HttpCompositeTest extends HttpTestCase
 {
     use EngineTestCaseTrait;
 
     protected function getActionClass()
     {
-        return HttpEngine::class;
+        return HttpComposition::class;
     }
 
-    protected function handle(HttpEngine $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    protected function getConfiguration(string $url, ?string $type = null): array
     {
-        $action->setUrl($configuration->get('url'));
-        $action->setType($configuration->get('type'));
-
-        return $action->handle($request, $configuration, $context);
+        return [
+            'url' => [$url],
+            'type' => $type,
+        ];
     }
 
-    public function testGetForm()
+    protected function getExpectedJson(string $url)
     {
-        $action  = $this->getActionFactory()->factory(HttpEngine::class);
-        $builder = new Builder();
-        $factory = $this->getFormElementFactory();
+        return \json_encode([
+            $url => [
+                'foo' => 'bar',
+                'bar' => 'foo'
+            ]
+        ]);
+    }
 
-        $action->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
+    protected function getExpectedXml(string $url)
+    {
+        return [
+            $url => '<foo>response</foo>'
+        ];
     }
 }

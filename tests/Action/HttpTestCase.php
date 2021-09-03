@@ -46,11 +46,6 @@ abstract class HttpTestCase extends TestCase
 {
     use EngineTestCaseTrait;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     public function testHandle()
     {
         $transactions = [];
@@ -68,6 +63,8 @@ abstract class HttpTestCase extends TestCase
         $action->setClient($client);
 
         // handle request
+        $url = 'http://127.0.0.1';
+
         $response = $this->handle(
             $action,
             $this->getRequest(
@@ -77,16 +74,12 @@ abstract class HttpTestCase extends TestCase
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar'])
             ),
-            $this->getParameters([
-                'url' => 'http://127.0.0.1',
-            ]),
+            $this->getParameters($this->getConfiguration($url)),
             $this->getContext()
         );
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
-{"foo":"bar","bar":"foo"}
-JSON;
+        $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -130,6 +123,8 @@ JSON;
         $action->setClient($client);
 
         // handle request
+        $url = 'http://127.0.0.1';
+
         $response = $this->handle(
             $action,
             $this->getRequest(
@@ -139,17 +134,12 @@ JSON;
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar', 'x' => 'bar'])
             ),
-            $this->getParameters([
-                'url' => 'http://127.0.0.1',
-                'type' => HttpEngine::TYPE_FORM,
-            ]),
+            $this->getParameters($this->getConfiguration($url, HttpEngine::TYPE_FORM)),
             $this->getContext()
         );
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
-{"foo":"bar","bar":"foo"}
-JSON;
+        $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -193,6 +183,8 @@ JSON;
         $action->setClient($client);
 
         // handle request
+        $url = 'http://127.0.0.1';
+
         $response = $this->handle(
             $action,
             $this->getRequest(
@@ -202,16 +194,14 @@ JSON;
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar'])
             ),
-            $this->getParameters([
-                'url' => 'http://127.0.0.1',
-            ]),
+            $this->getParameters($this->getConfiguration($url)),
             $this->getContext()
         );
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals(['x-foo' => ['Foo'], 'content-type' => ['application/xml']], $response->getHeaders());
-        $this->assertEquals('<foo>response</foo>', $response->getBody());
+        $this->assertEquals($this->getExpectedXml($url), $response->getBody());
 
         $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
@@ -250,6 +240,8 @@ JSON;
         $action->setClient($client);
 
         // handle request
+        $url = 'http://127.0.0.1/foo/:foo';
+
         $response = $this->handle(
             $action,
             $this->getRequest(
@@ -259,16 +251,12 @@ JSON;
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar'])
             ),
-            $this->getParameters([
-                'url' => 'http://127.0.0.1/foo/:foo',
-            ]),
+            $this->getParameters($this->getConfiguration($url)),
             $this->getContext()
         );
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
-{"foo":"bar","bar":"foo"}
-JSON;
+        $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -297,8 +285,29 @@ JSON;
 
     abstract protected function getActionClass();
 
-    abstract protected function handle(HttpEngine $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context);
-    
+    protected function handle(HttpEngine $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    {
+        return $action->handle($request, $configuration, $context);
+    }
+
+    protected function getConfiguration(string $url, ?string $type = null): array
+    {
+        return [
+            'url' => $url,
+            'type' => $type,
+        ];
+    }
+
+    protected function getExpectedJson(string $url)
+    {
+        return \json_encode(['foo' => 'bar', 'bar' => 'foo']);
+    }
+
+    protected function getExpectedXml(string $url)
+    {
+        return '<foo>response</foo>';
+    }
+
     private function getXHeaders(array $headers)
     {
         $result = [];

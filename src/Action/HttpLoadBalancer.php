@@ -44,8 +44,11 @@ class HttpLoadBalancer extends HttpEngine
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
         $urls = $configuration->get('url');
-        $url = $urls[array_rand($urls)] ?? null;
+        if (!is_array($urls) || empty($urls)) {
+            throw new \RuntimeException('No fitting urls configured');
+        }
 
+        $url = $urls[array_rand($urls)] ?? null;
         if (empty($url)) {
             throw new \RuntimeException('No fitting url configured');
         }
