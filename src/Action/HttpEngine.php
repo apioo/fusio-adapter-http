@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2019 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2021 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -38,12 +38,12 @@ use PSX\Record\Transformer;
  */
 class HttpEngine extends ActionAbstract
 {
-    protected const TYPE_JSON = 'application/json';
-    protected const TYPE_FORM = 'application/x-www-form-urlencoded';
+    public const TYPE_JSON = 'application/json';
+    public const TYPE_FORM = 'application/x-www-form-urlencoded';
 
-    protected const HTTP_1_0 = '1.0';
-    protected const HTTP_1_1 = '1.1';
-    protected const HTTP_2_0 = '2.0';
+    public const HTTP_1_0 = '1.0';
+    public const HTTP_1_1 = '1.1';
+    public const HTTP_2_0 = '2.0';
 
     protected const CONTENT_TYPE = [
         self::TYPE_JSON => self::TYPE_JSON,
