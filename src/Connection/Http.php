@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2021 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -32,20 +32,16 @@ use GuzzleHttp;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 class Http implements ConnectionInterface
 {
-    public function getName()
+    public function getName(): string
     {
         return 'HTTP';
     }
 
-    /**
-     * @param \Fusio\Engine\ParametersInterface $config
-     * @return \GuzzleHttp\Client
-     */
-    public function getConnection(ParametersInterface $config)
+    public function getConnection(ParametersInterface $config): GuzzleHttp\Client
     {
         $options = [];
 
@@ -70,7 +66,7 @@ class Http implements ConnectionInterface
         return new GuzzleHttp\Client($options);
     }
 
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         $builder->add($elementFactory->newInput('url', 'Url', 'text', 'HTTP base url'));
         $builder->add($elementFactory->newInput('username', 'Username', 'text', 'Optional username for authentication'));

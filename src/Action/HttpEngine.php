@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2021 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -26,6 +26,7 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
+use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
 use PSX\Record\Transformer;
 
@@ -34,7 +35,7 @@ use PSX\Record\Transformer;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 class HttpEngine extends ActionAbstract
 {
@@ -56,55 +57,40 @@ class HttpEngine extends ActionAbstract
         self::HTTP_2_0 => self::HTTP_2_0,
     ];
 
-    /**
-     * @var string
-     */
-    protected $url;
+    protected ?string $url;
+    protected ?string $type;
+    protected ?string $version;
+    protected ?\GuzzleHttp\Client $client;
 
-    /**
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * @var string
-     */
-    protected $version;
-
-    /**
-     * @var \GuzzleHttp\Client
-     */
-    protected $client;
-
-    public function __construct($url = null, Client $client = null)
+    public function __construct(?string $url = null, ?Client $client = null)
     {
         $this->url    = $url;
         $this->client = $client ?: new Client();
     }
 
-    public function setUrl($url)
+    public function setUrl(?string $url): void
     {
         $this->url = $url;
     }
 
-    public function setType($type)
+    public function setType(?string $type): void
     {
         $this->type = $type;
     }
 
-    public function setVersion($version)
+    public function setVersion(?string $version): void
     {
         $this->version = $version;
     }
 
-    public function setClient(Client $client)
+    public function setClient(Client $client): void
     {
         $this->client = $client;
     }
 
-    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
-        $clientIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+        $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
         $exclude = ['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
         $headers = $request->getHeaders();
@@ -178,7 +164,7 @@ class HttpEngine extends ActionAbstract
         );
     }
 
-    private function isJson($contentType)
+    private function isJson(?string $contentType): bool
     {
         if (!empty($contentType)) {
             try {
