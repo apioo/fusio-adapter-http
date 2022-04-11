@@ -157,9 +157,14 @@ class HttpEngine extends ActionAbstract
             $data = $body;
         }
 
+        $responseHeaders = array_change_key_case($response->getHeaders(), CASE_LOWER);
+        if (isset($responseHeaders['content-length'])) {
+            unset($responseHeaders['content-length']);
+        }
+
         return $this->response->build(
             $response->getStatusCode(),
-            $response->getHeaders(),
+            $responseHeaders,
             $data
         );
     }
