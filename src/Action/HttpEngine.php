@@ -142,6 +142,7 @@ class HttpEngine extends ActionAbstract
         $response    = $this->client->request($request->getMethod(), $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
+        $response    = $response->withoutHeader('Content-Length');
         $body        = (string) $response->getBody();
 
         if ($this->isJson($contentType)) {
@@ -155,11 +156,6 @@ class HttpEngine extends ActionAbstract
             }
 
             $data = $body;
-        }
-
-        $responseHeaders = array_change_key_case($response->getHeaders(), CASE_LOWER);
-        if (isset($responseHeaders['content-length'])) {
-            unset($responseHeaders['content-length']);
         }
 
         return $this->response->build(
