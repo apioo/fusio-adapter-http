@@ -160,7 +160,7 @@ class HttpEngine extends ActionAbstract
 
         return $this->response->build(
             $response->getStatusCode(),
-            $responseHeaders,
+            $response->getHeaders(),
             $data
         );
     }
