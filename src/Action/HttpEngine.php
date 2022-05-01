@@ -57,10 +57,11 @@ class HttpEngine extends ActionAbstract
         self::HTTP_2_0 => self::HTTP_2_0,
     ];
 
-    protected ?string $url;
-    protected ?string $type;
-    protected ?string $version;
-    protected ?\GuzzleHttp\Client $client;
+    protected ?string $url = null;
+    protected ?string $type = null;
+    protected ?string $version = null;
+    protected ?string $authorization = null;
+    protected ?\GuzzleHttp\Client $client = null;
 
     public function __construct(?string $url = null, ?Client $client = null)
     {
@@ -81,6 +82,11 @@ class HttpEngine extends ActionAbstract
     public function setVersion(?string $version): void
     {
         $this->version = $version;
+    }
+
+    public function setAuthorization(?string $authorization): void
+    {
+        $this->authorization = $authorization;
     }
 
     public function setClient(Client $client): void
@@ -110,9 +116,13 @@ class HttpEngine extends ActionAbstract
             $headers['x-forwarded-host'] = $host;
         }
 
-        $auth = $request->getHeader('Proxy-Authorization');
-        if (!empty($auth)) {
-            $headers['authorization'] = $auth;
+        if (!empty($this->authorization)) {
+            $headers['authorization'] = $this->authorization;
+        } else {
+            $auth = $request->getHeader('Proxy-Authorization');
+            if (!empty($auth)) {
+                $headers['authorization'] = $auth;
+            }
         }
 
         $options = [

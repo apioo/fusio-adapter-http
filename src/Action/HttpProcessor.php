@@ -51,6 +51,10 @@ class HttpProcessor extends HttpEngine
             $this->setVersion($configuration->get('version'));
         }
 
+        if (!empty($configuration->get('authorization'))) {
+            $this->setAuthorization($configuration->get('authorization'));
+        }
+
         return parent::handle($request, $configuration, $context);
     }
 
@@ -58,6 +62,7 @@ class HttpProcessor extends HttpEngine
     {
         $builder->add($elementFactory->newInput('url', 'URL', 'text', 'An url to the HTTP endpoint'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
-        $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
+        $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional HTTP protocol which you want to send to the endpoint.'));
+        $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint.'));
     }
 }
