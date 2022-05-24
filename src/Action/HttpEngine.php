@@ -105,6 +105,7 @@ class HttpEngine extends ActionAbstract
         $headers['x-fusio-route-id'] = '' . $context->getRouteId();
         $headers['x-fusio-user-anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
         $headers['x-fusio-user-id'] = '' . $context->getUser()->getId();
+        $headers['x-fusio-user-name'] = $context->getUser()->getName();
         $headers['x-fusio-app-id'] = '' . $context->getApp()->getId();
         $headers['x-fusio-app-key'] = $context->getApp()->getAppKey();
         $headers['x-fusio-remote-ip'] = $clientIp;
