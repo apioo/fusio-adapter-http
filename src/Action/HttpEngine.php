@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2023 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -61,13 +61,6 @@ class HttpEngine extends ActionAbstract
     protected ?string $type = null;
     protected ?string $version = null;
     protected ?string $authorization = null;
-    protected ?\GuzzleHttp\Client $client = null;
-
-    public function __construct(?string $url = null, ?Client $client = null)
-    {
-        $this->url    = $url;
-        $this->client = $client ?: new Client();
-    }
 
     public function setUrl(?string $url): void
     {
@@ -87,11 +80,6 @@ class HttpEngine extends ActionAbstract
     public function setAuthorization(?string $authorization): void
     {
         $this->authorization = $authorization;
-    }
-
-    public function setClient(Client $client): void
-    {
-        $this->client = $client;
     }
 
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
@@ -150,7 +138,8 @@ class HttpEngine extends ActionAbstract
             }
         }
 
-        $response    = $this->client->request($request->getMethod(), $url, $options);
+        $client      = new Client();
+        $response    = $client->request($request->getMethod(), $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
         $response    = $response->withoutHeader('Content-Length');
@@ -180,7 +169,7 @@ class HttpEngine extends ActionAbstract
     {
         if (!empty($contentType)) {
             try {
-                return MediaType\Json::isMediaType(new MediaType($contentType));
+                return MediaType\Json::isMediaType(MediaType::parse($contentType));
             } catch (\InvalidArgumentException $e) {
             }
         }

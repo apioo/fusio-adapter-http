@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2023 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Http\Tests\Action;
 
 use Fusio\Adapter\Http\Action\HttpEngine;
+use Fusio\Adapter\Http\Action\HttpLoadBalancer;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
@@ -30,37 +31,24 @@ use Fusio\Engine\RequestInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 
 /**
- * HttpEngineTest
+ * HttpLoadBalancerTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class HttpEngineTest extends HttpTestCase
+class HttpLoadBalancerActionTest extends HttpActionTestCase
 {
-    use EngineTestCaseTrait;
-
     protected function getActionClass()
     {
-        return HttpEngine::class;
+        return HttpLoadBalancer::class;
     }
 
-    protected function handle(HttpEngine $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    protected function getConfiguration(string $url, ?string $type = null): array
     {
-        $action->setUrl($configuration->get('url'));
-        $action->setType($configuration->get('type'));
-
-        return $action->handle($request, $configuration, $context);
-    }
-
-    public function testGetForm()
-    {
-        $action  = $this->getActionFactory()->factory(HttpEngine::class);
-        $builder = new Builder();
-        $factory = $this->getFormElementFactory();
-
-        $action->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
+        return [
+            'url' => [$url],
+            'type' => $type,
+        ];
     }
 }
