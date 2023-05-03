@@ -38,7 +38,7 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  */
 class HttpEngineActionTest extends HttpActionTestCase
 {
-    protected function getActionClass()
+    protected function getActionClass(): string
     {
         return HttpEngine::class;
     }

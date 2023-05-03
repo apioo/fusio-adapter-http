@@ -39,7 +39,7 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  */
 class HttpLoadBalancerActionTest extends HttpActionTestCase
 {
-    protected function getActionClass()
+    protected function getActionClass(): string
     {
         return HttpLoadBalancer::class;
     }

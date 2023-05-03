@@ -63,6 +63,7 @@ class HttpEngine extends ActionAbstract
     protected ?string $type = null;
     protected ?string $version = null;
     protected ?string $authorization = null;
+    protected ?Client $client = null;
 
     public function setUrl(?string $url): void
     {
@@ -82,6 +83,11 @@ class HttpEngine extends ActionAbstract
     public function setAuthorization(?string $authorization): void
     {
         $this->authorization = $authorization;
+    }
+
+    public function setClient(Client $client): void
+    {
+        $this->client = $client;
     }
 
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
@@ -151,7 +157,7 @@ class HttpEngine extends ActionAbstract
             }
         }
 
-        $client      = new Client();
+        $client      = $this->client ?? new Client();
         $response    = $client->request($method, $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');

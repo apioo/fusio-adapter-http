@@ -39,7 +39,7 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  */
 class HttpCompositeActionTest extends HttpActionTestCase
 {
-    protected function getActionClass()
+    protected function getActionClass(): string
     {
         return HttpComposition::class;
     }
