@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Http\Action;
 
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Request\HttpRequest;
 use Fusio\Engine\RequestInterface;
@@ -143,7 +144,7 @@ class HttpEngine extends ActionAbstract
             $options['json'] = $request->getPayload();
         }
 
-        $url = $this->url;
+        $url = $this->url ?? throw new ConfigurationException('Provided no url');
         if (!empty($uriFragments)) {
             foreach ($uriFragments as $name => $value) {
                 $url = str_replace(':' . $name, $value, $url);
