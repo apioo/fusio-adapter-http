@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Http\Action;
 
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
@@ -46,12 +47,12 @@ class HttpLoadBalancer extends HttpEngine
     {
         $urls = $configuration->get('url');
         if (!is_array($urls) || empty($urls)) {
-            throw new \RuntimeException('No fitting urls configured');
+            throw new ConfigurationException('No fitting urls configured');
         }
 
         $url = $urls[array_rand($urls)] ?? null;
         if (empty($url)) {
-            throw new \RuntimeException('No fitting url configured');
+            throw new ConfigurationException('No fitting url configured');
         }
 
         $this->setUrl($url);
@@ -66,7 +67,7 @@ class HttpLoadBalancer extends HttpEngine
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
-        $builder->add($elementFactory->newTag('url', 'URL', 'Multiple urls which are called randomly for load balancing'));
+        $builder->add($elementFactory->newCollection('url', 'URL', 'Multiple urls which are called randomly for load balancing'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
     }

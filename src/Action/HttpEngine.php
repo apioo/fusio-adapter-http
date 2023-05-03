@@ -24,6 +24,7 @@ namespace Fusio\Adapter\Http\Action;
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
+use Fusio\Engine\Request\HttpInterface;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
 use PSX\Http\Environment\HttpResponseInterface;
@@ -86,9 +87,25 @@ class HttpEngine extends ActionAbstract
     {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
-        $exclude = ['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
-        $headers = $request->getHeaders();
-        $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
+        $requestContext = $request->getContext();
+        if ($requestContext instanceof HttpInterface) {
+            $exclude = ['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
+            $headers = $requestContext->getHeaders();
+            $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
+
+            $method = $requestContext->getMethod();
+            $uriFragments = $requestContext->getUriFragments();
+            $query = $requestContext->getParameters();
+            $host = $requestContext->getHeader('Host');
+            $auth = $requestContext->getHeader('Proxy-Authorization');
+        } else {
+            $method = 'POST';
+            $uriFragments = [];
+            $query = [];
+            $headers = [];
+            $host = null;
+            $auth = null;
+        }
 
         $headers['x-fusio-route-id'] = '' . $context->getRouteId();
         $headers['x-fusio-user-anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
@@ -100,23 +117,19 @@ class HttpEngine extends ActionAbstract
         $headers['x-forwarded-for'] = $clientIp;
         $headers['accept'] = 'application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8';
 
-        $host = $request->getHeader('Host');
         if (!empty($host)) {
             $headers['x-forwarded-host'] = $host;
         }
 
         if (!empty($this->authorization)) {
             $headers['authorization'] = $this->authorization;
-        } else {
-            $auth = $request->getHeader('Proxy-Authorization');
-            if (!empty($auth)) {
-                $headers['authorization'] = $auth;
-            }
+        } elseif (!empty($auth)) {
+            $headers['authorization'] = $auth;
         }
 
         $options = [
             'headers' => $headers,
-            'query' => $request->getParameters(),
+            'query' => $query,
             'http_errors' => false,
         ];
 
@@ -125,13 +138,12 @@ class HttpEngine extends ActionAbstract
         }
 
         if ($this->type == self::TYPE_FORM) {
-            $options['form_params'] = Transformer::toArray($request->getBody());
+            $options['form_params'] = Transformer::toArray($request->getPayload());
         } else {
-            $options['json'] = $request->getBody();
+            $options['json'] = $request->getPayload();
         }
 
         $url = $this->url;
-        $uriFragments = $request->getUriFragments();
         if (!empty($uriFragments)) {
             foreach ($uriFragments as $name => $value) {
                 $url = str_replace(':' . $name, $value, $url);
@@ -139,7 +151,7 @@ class HttpEngine extends ActionAbstract
         }
 
         $client      = new Client();
-        $response    = $client->request($request->getMethod(), $url, $options);
+        $response    = $client->request($method, $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
         $response    = $response->withoutHeader('Content-Length');
@@ -147,7 +159,7 @@ class HttpEngine extends ActionAbstract
 
         if ($this->isJson($contentType)) {
             $data = json_decode($body);
-        } elseif (strpos($contentType, self::TYPE_FORM) !== false) {
+        } elseif (str_contains($contentType, self::TYPE_FORM)) {
             $data = [];
             parse_str($body, $data);
         } else {

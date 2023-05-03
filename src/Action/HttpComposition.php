@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Http\Action;
 
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
@@ -45,6 +46,10 @@ class HttpComposition extends HttpEngine
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
         $urls = $configuration->get('url');
+        if (!is_array($urls) || empty($urls)) {
+            throw new ConfigurationException('No fitting urls configured');
+        }
+
         $headers = [];
         $data = [];
 
@@ -74,7 +79,7 @@ class HttpComposition extends HttpEngine
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
-        $builder->add($elementFactory->newTag('url', 'URL', 'Calls multiple defined urls and returns a composite result of every call'));
+        $builder->add($elementFactory->newCollection('url', 'URL', 'Calls multiple defined urls and returns a composite result of every call'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
     }
