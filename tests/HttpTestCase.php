@@ -21,9 +21,8 @@
 
 namespace Fusio\Adapter\Http\Tests;
 
-use Fusio\Adapter\GraphQL\Action\GraphQLProcessor;
-use Fusio\Adapter\GraphQL\Connection\GraphQL;
 use Fusio\Adapter\Http\Action\HttpComposition;
+use Fusio\Adapter\Http\Action\HttpEngine;
 use Fusio\Adapter\Http\Action\HttpLoadBalancer;
 use Fusio\Adapter\Http\Action\HttpProcessor;
 use Fusio\Adapter\Http\Connection\Http;
@@ -47,6 +46,7 @@ abstract class HttpTestCase extends TestCase
     {
         $container->set(Http::class, new Http());
         $container->set(HttpComposition::class, new HttpComposition($runtime));
+        $container->set(HttpEngine::class, new HttpEngine($runtime));
         $container->set(HttpLoadBalancer::class, new HttpLoadBalancer($runtime));
         $container->set(HttpProcessor::class, new HttpProcessor($runtime));
     }
