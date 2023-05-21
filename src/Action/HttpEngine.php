@@ -25,7 +25,7 @@ use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\Request\HttpRequest;
+use Fusio\Engine\Request\HttpRequestContext;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
 use PSX\Http\Environment\HttpResponseInterface;
@@ -95,16 +95,17 @@ class HttpEngine extends ActionAbstract
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
         $requestContext = $request->getContext();
-        if ($requestContext instanceof HttpRequest) {
+        if ($requestContext instanceof HttpRequestContext) {
+            $request = $requestContext->getRequest();
             $exclude = ['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
-            $headers = $requestContext->getHeaders();
+            $headers = $request->getHeaders();
             $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
 
-            $method = $requestContext->getMethod();
-            $uriFragments = $requestContext->getUriFragments();
-            $query = $requestContext->getParameters();
-            $host = $requestContext->getHeader('Host');
-            $auth = $requestContext->getHeader('Proxy-Authorization');
+            $method = $request->getMethod();
+            $uriFragments = $requestContext->getParameters();
+            $query = $request->getUri()->getParameters();
+            $host = $request->getHeader('Host');
+            $auth = $request->getHeader('Proxy-Authorization');
         } else {
             $method = 'POST';
             $uriFragments = [];
