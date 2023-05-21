@@ -96,16 +96,16 @@ class HttpEngine extends ActionAbstract
 
         $requestContext = $request->getContext();
         if ($requestContext instanceof HttpRequestContext) {
-            $request = $requestContext->getRequest();
+            $httpRequest = $requestContext->getRequest();
             $exclude = ['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
-            $headers = $request->getHeaders();
+            $headers = $httpRequest->getHeaders();
             $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
 
-            $method = $request->getMethod();
+            $method = $httpRequest->getMethod();
             $uriFragments = $requestContext->getParameters();
-            $query = $request->getUri()->getParameters();
-            $host = $request->getHeader('Host');
-            $auth = $request->getHeader('Proxy-Authorization');
+            $query = $httpRequest->getUri()->getParameters();
+            $host = $httpRequest->getHeader('Host');
+            $auth = $httpRequest->getHeader('Proxy-Authorization');
         } else {
             $method = 'POST';
             $uriFragments = [];
