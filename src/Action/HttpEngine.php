@@ -21,12 +21,14 @@
 
 namespace Fusio\Adapter\Http\Action;
 
-use Fusio\Engine\ActionAbstract;
+use Fusio\Engine\Action\RuntimeInterface;
+use Fusio\Engine\ActionInterface;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Request\HttpRequestContext;
 use Fusio\Engine\RequestInterface;
+use Fusio\Engine\Response\FactoryInterface;
 use GuzzleHttp\Client;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
@@ -39,7 +41,7 @@ use PSX\Record\Transformer;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class HttpEngine extends ActionAbstract
+class HttpEngine implements ActionInterface
 {
     public const TYPE_JSON = 'application/json';
     public const TYPE_FORM = 'application/x-www-form-urlencoded';
@@ -64,6 +66,13 @@ class HttpEngine extends ActionAbstract
     protected ?string $version = null;
     protected ?string $authorization = null;
     protected ?Client $client = null;
+
+    private FactoryInterface $response;
+
+    public function __construct(RuntimeInterface $runtime)
+    {
+        $this->response = $runtime->getResponse();
+    }
 
     public function setUrl(?string $url): void
     {
