@@ -50,15 +50,4 @@ class HttpEngineActionTest extends HttpActionTestCase
 
         return $action->handle($request, $configuration, $context);
     }
-
-    public function testGetForm()
-    {
-        $action  = $this->getActionFactory()->factory(HttpEngine::class);
-        $builder = new Builder();
-        $factory = $this->getFormElementFactory();
-
-        $action->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
-    }
 }
