@@ -23,11 +23,8 @@ namespace Fusio\Adapter\Http\Tests\Action;
 
 use Fusio\Adapter\Http\Action\HttpEngine;
 use Fusio\Engine\ContextInterface;
-use Fusio\Engine\Form\Builder;
-use Fusio\Engine\Form\Container;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
-use Fusio\Engine\Test\EngineTestCaseTrait;
 
 /**
  * HttpEngineTest
