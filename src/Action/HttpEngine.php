@@ -61,11 +61,11 @@ class HttpEngine implements ActionInterface
         self::HTTP_2_0 => self::HTTP_2_0,
     ];
 
-    protected ?string $url = null;
-    protected ?string $type = null;
-    protected ?string $version = null;
-    protected ?string $authorization = null;
-    protected ?Client $client = null;
+    private ?string $url = null;
+    private ?string $type = null;
+    private ?string $version = null;
+    private ?string $authorization = null;
+    private ?Client $client = null;
 
     private FactoryInterface $response;
 
