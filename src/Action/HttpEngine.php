@@ -67,7 +67,7 @@ class HttpEngine implements ActionInterface
     private ?string $authorization = null;
     private ?Client $client = null;
 
-    private FactoryInterface $response;
+    protected FactoryInterface $response;
 
     public function __construct(RuntimeInterface $runtime)
     {

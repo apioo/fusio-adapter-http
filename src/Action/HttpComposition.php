@@ -21,6 +21,7 @@
 
 namespace Fusio\Adapter\Http\Action;
 
+use Fusio\Engine\ConfigurableInterface;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
@@ -36,7 +37,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class HttpComposition extends HttpEngine
+class HttpComposition extends HttpEngine implements ConfigurableInterface
 {
     public function getName(): string
     {
