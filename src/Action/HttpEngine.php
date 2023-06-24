@@ -124,7 +124,7 @@ class HttpEngine implements ActionInterface
             $auth = null;
         }
 
-        $headers['x-fusio-route-id'] = '' . $context->getRouteId();
+        $headers['x-fusio-operation-id'] = '' . $context->getOperationId();
         $headers['x-fusio-user-anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
         $headers['x-fusio-user-id'] = '' . $context->getUser()->getId();
         $headers['x-fusio-user-name'] = $context->getUser()->getName();
