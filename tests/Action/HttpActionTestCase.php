@@ -87,7 +87,7 @@ abstract class HttpActionTestCase extends HttpTestCase
         $transaction = reset($transactions);
 
         $headers = [
-            'x-fusio-route-id' => ['34'],
+            'x-fusio-operation-id' => ['34'],
             'x-fusio-user-anonymous' => ['0'],
             'x-fusio-user-id' => ['2'],
             'x-fusio-user-name' => ['Consumer'],
@@ -148,7 +148,7 @@ abstract class HttpActionTestCase extends HttpTestCase
         $transaction = reset($transactions);
 
         $headers = [
-            'x-fusio-route-id' => ['34'],
+            'x-fusio-operation-id' => ['34'],
             'x-fusio-user-anonymous' => ['0'],
             'x-fusio-user-id' => ['2'],
             'x-fusio-user-name' => ['Consumer'],
@@ -206,7 +206,7 @@ abstract class HttpActionTestCase extends HttpTestCase
         $transaction = reset($transactions);
 
         $headers = [
-            'x-fusio-route-id' => ['34'],
+            'x-fusio-operation-id' => ['34'],
             'x-fusio-user-anonymous' => ['0'],
             'x-fusio-user-id' => ['2'],
             'x-fusio-user-name' => ['Consumer'],
@@ -267,7 +267,7 @@ abstract class HttpActionTestCase extends HttpTestCase
         $transaction = reset($transactions);
 
         $headers = [
-            'x-fusio-route-id' => ['34'],
+            'x-fusio-operation-id' => ['34'],
             'x-fusio-user-anonymous' => ['0'],
             'x-fusio-user-id' => ['2'],
             'x-fusio-user-name' => ['Consumer'],
