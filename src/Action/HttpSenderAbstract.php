@@ -21,27 +21,23 @@
 
 namespace Fusio\Adapter\Http\Action;
 
-use Fusio\Engine\Action\RuntimeInterface;
-use Fusio\Engine\ActionInterface;
+use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
-use Fusio\Engine\Exception\ConfigurationException;
-use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Request\HttpRequestContext;
 use Fusio\Engine\RequestInterface;
-use Fusio\Engine\Response\FactoryInterface;
 use GuzzleHttp\Client;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
 use PSX\Record\Transformer;
 
 /**
- * HttpEngine
+ * HttpSenderAbstract
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class HttpEngine implements ActionInterface
+abstract class HttpSenderAbstract extends ActionAbstract
 {
     public const TYPE_JSON = 'application/json';
     public const TYPE_FORM = 'application/x-www-form-urlencoded';
@@ -61,45 +57,7 @@ class HttpEngine implements ActionInterface
         self::HTTP_2_0 => self::HTTP_2_0,
     ];
 
-    private ?string $url = null;
-    private ?string $type = null;
-    private ?string $version = null;
-    private ?string $authorization = null;
-    private ?Client $client = null;
-
-    protected FactoryInterface $response;
-
-    public function __construct(RuntimeInterface $runtime)
-    {
-        $this->response = $runtime->getResponse();
-    }
-
-    public function setUrl(?string $url): void
-    {
-        $this->url = $url;
-    }
-
-    public function setType(?string $type): void
-    {
-        $this->type = $type;
-    }
-
-    public function setVersion(?string $version): void
-    {
-        $this->version = $version;
-    }
-
-    public function setAuthorization(?string $authorization): void
-    {
-        $this->authorization = $authorization;
-    }
-
-    public function setClient(Client $client): void
-    {
-        $this->client = $client;
-    }
-
-    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
+    public function send(string $url, ?string $type, ?string $version, ?string $authorization, RequestInterface $request, ContextInterface $context): HttpResponseInterface
     {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
@@ -114,14 +72,14 @@ class HttpEngine implements ActionInterface
             $uriFragments = $requestContext->getParameters();
             $query = $httpRequest->getUri()->getParameters();
             $host = $httpRequest->getHeader('Host');
-            $auth = $httpRequest->getHeader('Proxy-Authorization');
+            $proxyAuthorization = $httpRequest->getHeader('Proxy-Authorization');
         } else {
             $method = 'POST';
             $uriFragments = [];
             $query = [];
             $headers = [];
             $host = null;
-            $auth = null;
+            $proxyAuthorization = null;
         }
 
         $headers['x-fusio-operation-id'] = '' . $context->getOperationId();
@@ -138,10 +96,10 @@ class HttpEngine implements ActionInterface
             $headers['x-forwarded-host'] = $host;
         }
 
-        if (!empty($this->authorization)) {
-            $headers['authorization'] = $this->authorization;
-        } elseif (!empty($auth)) {
-            $headers['authorization'] = $auth;
+        if (!empty($authorization)) {
+            $headers['authorization'] = $authorization;
+        } elseif (!empty($proxyAuthorization)) {
+            $headers['authorization'] = $proxyAuthorization;
         }
 
         $options = [
@@ -150,25 +108,23 @@ class HttpEngine implements ActionInterface
             'http_errors' => false,
         ];
 
-        if (!empty($this->version)) {
-            $options['version'] = $this->version;
+        if (!empty($version)) {
+            $options['version'] = $version;
         }
 
-        if ($this->type == self::TYPE_FORM) {
+        if ($type == self::TYPE_FORM) {
             $options['form_params'] = Transformer::toArray($request->getPayload());
         } else {
             $options['json'] = $request->getPayload();
         }
 
-        $url = $this->url ?? throw new ConfigurationException('Provided no url');
         if (!empty($uriFragments)) {
             foreach ($uriFragments as $name => $value) {
                 $url = str_replace(':' . $name, $value, $url);
             }
         }
 
-        $client      = $this->client ?? new Client();
-        $response    = $client->request($method, $url, $options);
+        $response    = (new Client())->request($method, $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
         $response    = $response->withoutHeader('Content-Length');

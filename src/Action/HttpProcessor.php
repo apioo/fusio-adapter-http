@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Http\Action;
 
 use Fusio\Engine\ConfigurableInterface;
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
@@ -36,7 +37,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class HttpProcessor extends HttpEngine implements ConfigurableInterface
+class HttpProcessor extends HttpSenderAbstract implements ConfigurableInterface
 {
     public function getName(): string
     {
@@ -45,18 +46,23 @@ class HttpProcessor extends HttpEngine implements ConfigurableInterface
 
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
-        $this->setUrl($configuration->get('url'));
-        $this->setType($configuration->get('type'));
-
-        if (!empty($configuration->get('version'))) {
-            $this->setVersion($configuration->get('version'));
+        $url = $configuration->get('url');
+        if (empty($url)) {
+            throw new ConfigurationException('No url configured');
         }
 
-        if (!empty($configuration->get('authorization'))) {
-            $this->setAuthorization($configuration->get('authorization'));
-        }
+        $type = $configuration->get('type');
+        $version = $configuration->get('version');
+        $authorization = $configuration->get('authorization');
 
-        return parent::handle($request, $configuration, $context);
+        return $this->send(
+            $url,
+            $type,
+            $version,
+            $authorization,
+            $request,
+            $context
+        );
     }
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void

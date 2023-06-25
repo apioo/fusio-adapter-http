@@ -37,7 +37,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class HttpLoadBalancer extends HttpEngine implements ConfigurableInterface
+class HttpLoadBalancer extends HttpSenderAbstract implements ConfigurableInterface
 {
     public function getName(): string
     {
@@ -56,14 +56,11 @@ class HttpLoadBalancer extends HttpEngine implements ConfigurableInterface
             throw new ConfigurationException('No fitting url configured');
         }
 
-        $this->setUrl($url);
-        $this->setType($configuration->get('type'));
+        $type = $configuration->get('type');
+        $version = $configuration->get('version');
+        $authorization = $configuration->get('authorization');
 
-        if (!empty($configuration->get('version'))) {
-            $this->setVersion($configuration->get('version'));
-        }
-
-        return parent::handle($request, $configuration, $context);
+        return $this->send($url, $type, $version, $authorization, $request, $context);
     }
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
@@ -71,5 +68,6 @@ class HttpLoadBalancer extends HttpEngine implements ConfigurableInterface
         $builder->add($elementFactory->newCollection('url', 'URL', 'Multiple urls which are called randomly for load balancing'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
+        $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint.'));
     }
 }

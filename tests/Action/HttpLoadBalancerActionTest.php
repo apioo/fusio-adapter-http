@@ -21,7 +21,7 @@
 
 namespace Fusio\Adapter\Http\Tests\Action;
 
-use Fusio\Adapter\Http\Action\HttpEngine;
+use Fusio\Adapter\Http\Action\HttpSenderAbstract;
 use Fusio\Adapter\Http\Action\HttpLoadBalancer;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Form\Builder;

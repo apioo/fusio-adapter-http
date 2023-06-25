@@ -1,7 +1,7 @@
 <?php
 
 use Fusio\Adapter\Http\Action\HttpComposition;
-use Fusio\Adapter\Http\Action\HttpEngine;
+use Fusio\Adapter\Http\Action\HttpSenderAbstract;
 use Fusio\Adapter\Http\Action\HttpLoadBalancer;
 use Fusio\Adapter\Http\Action\HttpProcessor;
 use Fusio\Adapter\Http\Connection\Http;
@@ -12,7 +12,6 @@ return static function (ContainerConfigurator $container) {
     $services = ServiceBuilder::build($container);
     $services->set(Http::class);
     $services->set(HttpComposition::class);
-    $services->set(HttpEngine::class);
     $services->set(HttpLoadBalancer::class);
     $services->set(HttpProcessor::class);
 };

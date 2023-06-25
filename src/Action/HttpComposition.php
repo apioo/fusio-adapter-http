@@ -37,7 +37,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class HttpComposition extends HttpEngine implements ConfigurableInterface
+class HttpComposition extends HttpSenderAbstract implements ConfigurableInterface
 {
     public function getName(): string
     {
@@ -51,18 +51,15 @@ class HttpComposition extends HttpEngine implements ConfigurableInterface
             throw new ConfigurationException('No fitting urls configured');
         }
 
+        $type = $configuration->get('type');
+        $version = $configuration->get('version');
+        $authorization = $configuration->get('authorization');
+
         $headers = [];
         $data = [];
 
         foreach ($urls as $url) {
-            $this->setUrl($url);
-            $this->setType($configuration->get('type'));
-
-            if (!empty($configuration->get('version'))) {
-                $this->setVersion($configuration->get('version'));
-            }
-
-            $response = parent::handle($request, $configuration, $context);
+            $response = $this->send($url, $type, $version, $authorization, $request, $context);
 
             foreach ($response->getHeaders() as $key => $value) {
                 $headers[$key] = $value;
@@ -83,5 +80,6 @@ class HttpComposition extends HttpEngine implements ConfigurableInterface
         $builder->add($elementFactory->newCollection('url', 'URL', 'Calls multiple defined urls and returns a composite result of every call'));
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
+        $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint.'));
     }
 }

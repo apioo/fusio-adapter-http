@@ -21,7 +21,7 @@
 
 namespace Fusio\Adapter\Http\Tests\Action;
 
-use Fusio\Adapter\Http\Action\HttpEngine;
+use Fusio\Adapter\Http\Action\HttpSenderAbstract;
 use Fusio\Adapter\Http\Tests\HttpTestCase;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
@@ -132,7 +132,7 @@ abstract class HttpActionTestCase extends HttpTestCase
                 ['Content-Type' => 'application/json'],
                 Record::fromArray(['foo' => 'bar', 'x' => 'bar'])
             ),
-            $this->getParameters($this->getConfiguration($url, HttpEngine::TYPE_FORM)),
+            $this->getParameters($this->getConfiguration($url, HttpSenderAbstract::TYPE_FORM)),
             $this->getContext()
         );
 
@@ -286,7 +286,7 @@ abstract class HttpActionTestCase extends HttpTestCase
 
     abstract protected function getActionClass();
 
-    protected function handle(HttpEngine $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    protected function handle(HttpSenderAbstract $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
         return $action->handle($request, $configuration, $context);
     }

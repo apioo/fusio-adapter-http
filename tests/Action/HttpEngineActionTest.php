@@ -21,7 +21,7 @@
 
 namespace Fusio\Adapter\Http\Tests\Action;
 
-use Fusio\Adapter\Http\Action\HttpEngine;
+use Fusio\Adapter\Http\Action\HttpSenderAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
@@ -37,10 +37,10 @@ class HttpEngineActionTest extends HttpActionTestCase
 {
     protected function getActionClass(): string
     {
-        return HttpEngine::class;
+        return HttpSenderAbstract::class;
     }
 
-    protected function handle(HttpEngine $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    protected function handle(HttpSenderAbstract $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
         $action->setUrl($configuration->get('url'));
         $action->setType($configuration->get('type'));
