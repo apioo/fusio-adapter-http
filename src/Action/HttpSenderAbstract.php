@@ -57,6 +57,13 @@ abstract class HttpSenderAbstract extends ActionAbstract
         self::HTTP_2_0 => self::HTTP_2_0,
     ];
 
+    private ?Client $client = null;
+
+    public function setClient(Client $client): void
+    {
+        $this->client = $client;
+    }
+
     public function send(string $url, ?string $type, ?string $version, ?string $authorization, RequestInterface $request, ContextInterface $context): HttpResponseInterface
     {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
@@ -124,7 +131,8 @@ abstract class HttpSenderAbstract extends ActionAbstract
             }
         }
 
-        $response    = (new Client())->request($method, $url, $options);
+        $client      = $this->client ?? new Client();
+        $response    = $client->request($method, $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
         $response    = $response->withoutHeader('Content-Length');

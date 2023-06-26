@@ -46,7 +46,6 @@ abstract class HttpTestCase extends TestCase
     {
         $container->set(Http::class, new Http());
         $container->set(HttpComposition::class, new HttpComposition($runtime));
-        $container->set(HttpSenderAbstract::class, new HttpSenderAbstract($runtime));
         $container->set(HttpLoadBalancer::class, new HttpLoadBalancer($runtime));
         $container->set(HttpProcessor::class, new HttpProcessor($runtime));
     }

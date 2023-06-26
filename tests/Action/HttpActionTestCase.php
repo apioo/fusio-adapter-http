@@ -57,7 +57,9 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        $action->setClient($client);
+        if ($action instanceof HttpSenderAbstract) {
+            $action->setClient($client);
+        }
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -118,7 +120,9 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        $action->setClient($client);
+        if ($action instanceof HttpSenderAbstract) {
+            $action->setClient($client);
+        }
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -179,7 +183,9 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        $action->setClient($client);
+        if ($action instanceof HttpSenderAbstract) {
+            $action->setClient($client);
+        }
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -237,7 +243,9 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        $action->setClient($client);
+        if ($action instanceof HttpSenderAbstract) {
+            $action->setClient($client);
+        }
 
         // handle request
         $url = 'http://127.0.0.1/foo/:foo';
