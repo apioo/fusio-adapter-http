@@ -21,15 +21,9 @@
 
 namespace Fusio\Adapter\Http\Tests;
 
-use Fusio\Adapter\Http\Action\HttpComposition;
-use Fusio\Adapter\Http\Action\HttpSenderAbstract;
-use Fusio\Adapter\Http\Action\HttpLoadBalancer;
-use Fusio\Adapter\Http\Action\HttpProcessor;
-use Fusio\Adapter\Http\Connection\Http;
-use Fusio\Engine\Action\Runtime;
+use Fusio\Adapter\Http\Adapter;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\Container;
 
 /**
  * HttpTestCase
@@ -42,11 +36,8 @@ abstract class HttpTestCase extends TestCase
 {
     use EngineTestCaseTrait;
 
-    protected function configure(Runtime $runtime, Container $container): void
+    protected function getAdapterClass(): string
     {
-        $container->set(Http::class, new Http());
-        $container->set(HttpComposition::class, new HttpComposition($runtime));
-        $container->set(HttpLoadBalancer::class, new HttpLoadBalancer($runtime));
-        $container->set(HttpProcessor::class, new HttpProcessor($runtime));
+        return Adapter::class;
     }
 }
