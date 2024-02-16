@@ -20,6 +20,7 @@
 
 namespace Fusio\Adapter\Http\Action;
 
+use Composer\InstalledVersions;
 use Fusio\Adapter\Http\RequestConfig;
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
@@ -28,6 +29,7 @@ use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
+use PSX\Record\RecordInterface;
 use PSX\Record\Transformer;
 
 /**
@@ -98,6 +100,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
         $headers['x-fusio-remote-ip'] = $clientIp;
         $headers['x-forwarded-for'] = $clientIp;
         $headers['accept'] = 'application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8';
+        $headers['user-agent'] = 'Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http');
 
         if (!empty($host)) {
             $headers['x-forwarded-host'] = $host;
@@ -126,10 +129,11 @@ abstract class HttpSenderAbstract extends ActionAbstract
             $options['version'] = $version;
         }
 
+        $payload = $request->getPayload();
         if ($config->getType() == self::TYPE_FORM) {
-            $options['form_params'] = Transformer::toArray($request->getPayload());
+            $options['form_params'] = $payload instanceof \JsonSerializable ? Transformer::toArray($payload) : null;
         } else {
-            $options['json'] = $request->getPayload();
+            $options['json'] = $payload;
         }
 
         $url = $config->getUrl();
