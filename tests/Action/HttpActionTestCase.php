@@ -20,6 +20,7 @@
 
 namespace Fusio\Adapter\Http\Tests\Action;
 
+use Composer\InstalledVersions;
 use Fusio\Adapter\Http\Action\HttpSenderAbstract;
 use Fusio\Adapter\Http\Tests\HttpTestCase;
 use Fusio\Engine\ContextInterface;
@@ -97,6 +98,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             'x-fusio-remote-ip' => ['127.0.0.1'],
             'x-forwarded-for' => ['127.0.0.1'],
             'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
+            'user-agent' => ['Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http')],
         ];
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
@@ -160,6 +162,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             'x-fusio-remote-ip' => ['127.0.0.1'],
             'x-forwarded-for' => ['127.0.0.1'],
             'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
+            'user-agent' => ['Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http')],
         ];
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
@@ -220,6 +223,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             'x-fusio-remote-ip' => ['127.0.0.1'],
             'x-forwarded-for' => ['127.0.0.1'],
             'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
+            'user-agent' => ['Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http')],
         ];
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
@@ -283,6 +287,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             'x-fusio-remote-ip' => ['127.0.0.1'],
             'x-forwarded-for' => ['127.0.0.1'],
             'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
+            'user-agent' => ['Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http')],
         ];
 
         $this->assertEquals('GET', $transaction['request']->getMethod());
