@@ -20,6 +20,7 @@
 
 namespace Fusio\Adapter\Http\Action;
 
+use Fusio\Adapter\Http\RequestConfig;
 use Fusio\Engine\ConfigurableInterface;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
@@ -50,15 +51,8 @@ class HttpProcessor extends HttpSenderAbstract implements ConfigurableInterface
             throw new ConfigurationException('No url configured');
         }
 
-        $type = $configuration->get('type');
-        $version = $configuration->get('version');
-        $authorization = $configuration->get('authorization');
-
         return $this->send(
-            $url,
-            $type,
-            $version,
-            $authorization,
+            RequestConfig::fromConfiguration($url, $configuration),
             $request,
             $context
         );
@@ -70,5 +64,6 @@ class HttpProcessor extends HttpSenderAbstract implements ConfigurableInterface
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional HTTP protocol which you want to send to the endpoint.'));
         $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint.'));
+        $builder->add($elementFactory->newInput('query', 'Query', 'text', 'Optional fix query parameters which are attached to the url.'));
     }
 }

@@ -20,6 +20,7 @@
 
 namespace Fusio\Adapter\Http\Action;
 
+use Fusio\Adapter\Http\RequestConfig;
 use Fusio\Engine\ConfigurableInterface;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
@@ -50,15 +51,15 @@ class HttpComposition extends HttpSenderAbstract implements ConfigurableInterfac
             throw new ConfigurationException('No fitting urls configured');
         }
 
-        $type = $configuration->get('type');
-        $version = $configuration->get('version');
-        $authorization = $configuration->get('authorization');
-
         $headers = [];
         $data = [];
 
         foreach ($urls as $url) {
-            $response = $this->send($url, $type, $version, $authorization, $request, $context);
+            $response = $this->send(
+                RequestConfig::fromConfiguration($url, $configuration),
+                $request,
+                $context
+            );
 
             foreach ($response->getHeaders() as $key => $value) {
                 $headers[$key] = $value;
@@ -80,5 +81,6 @@ class HttpComposition extends HttpSenderAbstract implements ConfigurableInterfac
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional http protocol which you want to send to the endpoint.'));
         $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint.'));
+        $builder->add($elementFactory->newInput('query', 'Query', 'text', 'Optional fix query parameters which are attached to the url.'));
     }
 }

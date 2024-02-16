@@ -20,6 +20,7 @@
 
 namespace Fusio\Adapter\Http\Action;
 
+use Fusio\Adapter\Http\RequestConfig;
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Request\HttpRequestContext;
@@ -63,7 +64,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
         $this->client = $client;
     }
 
-    public function send(string $url, ?string $type, ?string $version, ?string $authorization, RequestInterface $request, ContextInterface $context): HttpResponseInterface
+    public function send(RequestConfig $config, RequestInterface $request, ContextInterface $context): HttpResponseInterface
     {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
@@ -102,10 +103,16 @@ abstract class HttpSenderAbstract extends ActionAbstract
             $headers['x-forwarded-host'] = $host;
         }
 
+        $authorization = $config->getAuthorization();
         if (!empty($authorization)) {
             $headers['authorization'] = $authorization;
         } elseif (!empty($proxyAuthorization)) {
             $headers['authorization'] = $proxyAuthorization;
+        }
+
+        $configuredQuery = $config->getQuery();
+        if (!empty($configuredQuery)) {
+            $query = array_merge($query, $configuredQuery);
         }
 
         $options = [
@@ -114,16 +121,18 @@ abstract class HttpSenderAbstract extends ActionAbstract
             'http_errors' => false,
         ];
 
+        $version = $config->getVersion();
         if (!empty($version)) {
             $options['version'] = $version;
         }
 
-        if ($type == self::TYPE_FORM) {
+        if ($config->getType() == self::TYPE_FORM) {
             $options['form_params'] = Transformer::toArray($request->getPayload());
         } else {
             $options['json'] = $request->getPayload();
         }
 
+        $url = $config->getUrl();
         if (!empty($uriFragments)) {
             foreach ($uriFragments as $name => $value) {
                 $url = str_replace(':' . $name, $value, $url);
