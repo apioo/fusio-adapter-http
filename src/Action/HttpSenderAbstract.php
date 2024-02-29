@@ -29,7 +29,6 @@ use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
-use PSX\Record\RecordInterface;
 use PSX\Record\Transformer;
 
 /**
@@ -59,6 +58,17 @@ abstract class HttpSenderAbstract extends ActionAbstract
         self::HTTP_2_0 => self::HTTP_2_0,
     ];
 
+    private const HOP_BY_HOP_HEADERS = [
+        'connection',
+        'keep-alive',
+        'proxy-authenticate',
+        'proxy-authorization',
+        'te',
+        'trailers',
+        'transfer-encoding',
+        'upgrade',
+    ];
+
     private ?Client $client = null;
 
     public function setClient(Client $client): void
@@ -73,7 +83,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
         $requestContext = $request->getContext();
         if ($requestContext instanceof HttpRequestContext) {
             $httpRequest = $requestContext->getRequest();
-            $exclude = ['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'connection', 'content-type', 'host', 'user-agent'];
+            $exclude = array_merge(['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'content-type', 'host', 'user-agent'], self::HOP_BY_HOP_HEADERS);
             $headers = $httpRequest->getHeaders();
             $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
 
@@ -148,7 +158,14 @@ abstract class HttpSenderAbstract extends ActionAbstract
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
         $response    = $response->withoutHeader('Content-Length');
-        $body        = (string) $response->getBody();
+
+        foreach (self::HOP_BY_HOP_HEADERS as $headerName) {
+            if ($response->hasHeader($headerName)) {
+                $response = $response->withoutHeader($headerName);
+            }
+        }
+
+        $body = (string) $response->getBody();
 
         if ($this->isJson($contentType)) {
             $data = json_decode($body);
