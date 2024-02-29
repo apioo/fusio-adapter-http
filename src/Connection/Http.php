@@ -20,6 +20,7 @@
 
 namespace Fusio\Adapter\Http\Connection;
 
+use Composer\InstalledVersions;
 use Fusio\Engine\ConnectionAbstract;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
@@ -60,6 +61,15 @@ class Http extends ConnectionAbstract
             $options['proxy'] = $proxy;
         }
 
+        $headers = [];
+        $headers['user-agent'] = 'Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http');
+
+        $authorization = $config->get('authorization');
+        if (!empty($authorization)) {
+            $headers['authorization'] = $authorization;
+        }
+
+        $options['headers'] = $headers;
         $options['http_errors'] = false;
 
         return new GuzzleHttp\Client($options);
@@ -70,6 +80,7 @@ class Http extends ConnectionAbstract
         $builder->add($elementFactory->newInput('url', 'Url', 'text', 'HTTP base url'));
         $builder->add($elementFactory->newInput('username', 'Username', 'text', 'Optional username for authentication'));
         $builder->add($elementFactory->newInput('password', 'Password', 'text', 'Optional password for authentication'));
-        $builder->add($elementFactory->newInput('proxy', 'Proxy', 'text', 'Optional HTTP proxy'));
+        $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional an HTTP authorization header which gets passed to the endpoint i.e. <code>Bearer my_token</code>.'));
+        $builder->add($elementFactory->newInput('proxy', 'Proxy', 'text', 'Optional HTTP proxy i.e. <code>http://localhost:8125</code>'));
     }
 }
