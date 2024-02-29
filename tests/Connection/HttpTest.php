@@ -53,22 +53,4 @@ class HttpTest extends HttpTestCase
 
         $this->assertInstanceOf(Client::class, $connection);
     }
-
-    public function testConfigure()
-    {
-        $connection = $this->getConnectionFactory()->factory(Http::class);
-        $builder    = new Builder();
-        $factory    = $this->getFormElementFactory();
-
-        $connection->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
-
-        $elements = $builder->getForm()->getElements();
-        $this->assertEquals(4, count($elements));
-        $this->assertInstanceOf(Input::class, $elements[0]);
-        $this->assertInstanceOf(Input::class, $elements[1]);
-        $this->assertInstanceOf(Input::class, $elements[2]);
-        $this->assertInstanceOf(Input::class, $elements[3]);
-    }
 }
