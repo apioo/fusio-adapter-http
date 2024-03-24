@@ -103,10 +103,17 @@ abstract class HttpSenderAbstract extends ActionAbstract
 
         $headers['x-fusio-operation-id'] = '' . $context->getOperationId();
         $headers['x-fusio-user-anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
-        $headers['x-fusio-user-id'] = '' . $context->getUser()->getId();
-        $headers['x-fusio-user-name'] = $context->getUser()->getName();
-        $headers['x-fusio-app-id'] = '' . $context->getApp()->getId();
-        $headers['x-fusio-app-key'] = $context->getApp()->getAppKey();
+
+        if (!$context->getUser()->isAnonymous()) {
+            $headers['x-fusio-user-id'] = '' . $context->getUser()->getId();
+            $headers['x-fusio-user-name'] = $context->getUser()->getName();
+        }
+
+        if (!$context->getApp()->isAnonymous()) {
+            $headers['x-fusio-app-id'] = '' . $context->getApp()->getId();
+            $headers['x-fusio-app-key'] = $context->getApp()->getAppKey();
+        }
+
         $headers['x-fusio-remote-ip'] = $clientIp;
         $headers['x-forwarded-for'] = $clientIp;
         $headers['accept'] = 'application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8';
