@@ -38,14 +38,16 @@ class RequestConfig
     private ?string $version;
     private ?string $authorization;
     private ?array $query;
+    private bool $cache;
 
-    public function __construct(string $url, ?string $type = null, ?string $version = null, ?string $authorization = null, ?array $query = null)
+    public function __construct(string $url, ?string $type = null, ?string $version = null, ?string $authorization = null, ?array $query = null, bool $cache = false)
     {
         $this->url = $url;
         $this->type = $type;
         $this->version = $version;
         $this->authorization = $authorization;
         $this->query = $query;
+        $this->cache = $cache;
     }
 
     public function getUrl(): string
@@ -73,11 +75,17 @@ class RequestConfig
         return $this->query;
     }
 
+    public function shouldCache(): bool
+    {
+        return $this->cache;
+    }
+
     public static function fromConfiguration(string $url, ParametersInterface $configuration): self
     {
         $type = $configuration->get('type');
         $version = $configuration->get('version');
         $authorization = $configuration->get('authorization');
+        $cache = $configuration->get('cache');
 
         $rawQuery = $configuration->get('query');
         $query = null;
@@ -86,6 +94,6 @@ class RequestConfig
             parse_str($rawQuery, $query);
         }
 
-        return new self($url, $type, $version, $authorization, $query);
+        return new self($url, $type, $version, $authorization, $query, !empty($cache));
     }
 }

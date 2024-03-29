@@ -27,6 +27,10 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Request\HttpRequestContext;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use Kevinrob\GuzzleCache\CacheMiddleware;
+use Kevinrob\GuzzleCache\Storage\Psr16CacheStorage;
+use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
 use PSX\Record\Transformer;
@@ -46,6 +50,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
     public const HTTP_1_0 = '1.0';
     public const HTTP_1_1 = '1.1';
     public const HTTP_2_0 = '2.0';
+    public const HTTP_3_0 = '3.0';
 
     protected const CONTENT_TYPE = [
         self::TYPE_JSON => self::TYPE_JSON,
@@ -56,6 +61,12 @@ abstract class HttpSenderAbstract extends ActionAbstract
         self::HTTP_1_0 => self::HTTP_1_0,
         self::HTTP_1_1 => self::HTTP_1_1,
         self::HTTP_2_0 => self::HTTP_2_0,
+        self::HTTP_3_0 => self::HTTP_3_0,
+    ];
+
+    protected const CACHE = [
+        0 => 'No',
+        1 => 'Yes',
     ];
 
     private const HOP_BY_HOP_HEADERS = [
@@ -160,7 +171,14 @@ abstract class HttpSenderAbstract extends ActionAbstract
             }
         }
 
-        $client      = $this->client ?? new Client();
+        $guzzleOptions = [];
+        if ($config->shouldCache()) {
+            $stack = HandlerStack::create();
+            $stack->push(new CacheMiddleware(new PrivateCacheStrategy(new Psr16CacheStorage($this->cache))), 'cache');
+            $guzzleOptions['handler'] = $stack;
+        }
+
+        $client      = $this->client ?? new Client($guzzleOptions);
         $response    = $client->request($method, $url, $options);
         $contentType = $response->getHeaderLine('Content-Type');
         $response    = $response->withoutHeader('Content-Type');
