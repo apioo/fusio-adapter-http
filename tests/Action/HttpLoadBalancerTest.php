@@ -21,7 +21,7 @@
 namespace Fusio\Adapter\Http\Tests\Action;
 
 use Fusio\Adapter\Http\Action\HttpSenderAbstract;
-use Fusio\Adapter\Http\Action\HttpProcessor;
+use Fusio\Adapter\Http\Action\HttpLoadBalancer;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
@@ -30,16 +30,26 @@ use Fusio\Engine\RequestInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 
 /**
- * HttpProcessorTest
+ * HttpLoadBalancerTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.apache.org/licenses/LICENSE-2.0
  * @link    https://www.fusio-project.org/
  */
-class HttpProcessorActionTest extends HttpActionTestCase
+class HttpLoadBalancerTest extends HttpActionTestCase
 {
     protected function getActionClass(): string
     {
-        return HttpProcessor::class;
+        return HttpLoadBalancer::class;
+    }
+
+    protected function getConfiguration(string $url, ?string $type = null, ?string $authorization = null, ?bool $cache = false): array
+    {
+        return [
+            'url' => [$url],
+            'type' => $type,
+            'authorization' => $authorization,
+            'cache' => $cache ? 1 : 0,
+        ];
     }
 }

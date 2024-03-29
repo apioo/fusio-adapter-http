@@ -24,13 +24,16 @@ use Composer\InstalledVersions;
 use Fusio\Adapter\Http\RequestConfig;
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Request\HttpRequestContext;
+use Fusio\Engine\Request\RequestContextInterface;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use Kevinrob\GuzzleCache\CacheMiddleware;
 use Kevinrob\GuzzleCache\Storage\Psr16CacheStorage;
 use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
+use Psr\Http\Message\ResponseInterface;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
 use PSX\Record\Transformer;
@@ -46,6 +49,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
 {
     public const TYPE_JSON = 'application/json';
     public const TYPE_FORM = 'application/x-www-form-urlencoded';
+    public const TYPE_BINARY = 'application/octet-stream';
 
     public const HTTP_1_0 = '1.0';
     public const HTTP_1_1 = '1.1';
@@ -69,7 +73,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
         1 => 'Yes',
     ];
 
-    private const HOP_BY_HOP_HEADERS = [
+    protected const HOP_BY_HOP_HEADERS = [
         'connection',
         'keep-alive',
         'proxy-authenticate',
@@ -87,30 +91,11 @@ abstract class HttpSenderAbstract extends ActionAbstract
         $this->client = $client;
     }
 
-    public function send(RequestConfig $config, RequestInterface $request, ContextInterface $context): HttpResponseInterface
+    public function send(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
-        $requestContext = $request->getContext();
-        if ($requestContext instanceof HttpRequestContext) {
-            $httpRequest = $requestContext->getRequest();
-            $exclude = array_merge(['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'content-type', 'host', 'user-agent'], self::HOP_BY_HOP_HEADERS);
-            $headers = $httpRequest->getHeaders();
-            $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
-
-            $method = $httpRequest->getMethod();
-            $uriFragments = $requestContext->getParameters();
-            $query = $httpRequest->getUri()->getParameters();
-            $host = $httpRequest->getHeader('Host');
-            $proxyAuthorization = $httpRequest->getHeader('Proxy-Authorization');
-        } else {
-            $method = 'POST';
-            $uriFragments = [];
-            $query = [];
-            $headers = [];
-            $host = null;
-            $proxyAuthorization = null;
-        }
+        [$method, $uriFragments, $query, $headers, $payload] = $this->getRequestValues($config, $request, $configuration);
 
         $headers['x-fusio-operation-id'] = '' . $context->getOperationId();
         $headers['x-fusio-user-anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
@@ -130,46 +115,14 @@ abstract class HttpSenderAbstract extends ActionAbstract
         $headers['accept'] = 'application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8';
         $headers['user-agent'] = 'Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http');
 
-        if (!empty($host)) {
-            $headers['x-forwarded-host'] = $host;
-        }
-
-        $authorization = $config->getAuthorization();
-        if (!empty($authorization)) {
-            $headers['authorization'] = $authorization;
-        } elseif (!empty($proxyAuthorization)) {
-            $headers['authorization'] = $proxyAuthorization;
-        }
-
-        $configuredQuery = $config->getQuery();
-        if (!empty($configuredQuery)) {
-            $query = array_merge($query, $configuredQuery);
-        }
-
-        $options = [
-            'headers' => $headers,
-            'query' => $query,
-            'http_errors' => false,
-        ];
-
-        $version = $config->getVersion();
-        if (!empty($version)) {
-            $options['version'] = $version;
-        }
-
-        $payload = $request->getPayload();
-        if ($config->getType() == self::TYPE_FORM) {
-            $options['form_params'] = $payload instanceof \JsonSerializable ? Transformer::toArray($payload) : null;
-        } else {
-            $options['json'] = $payload;
-        }
-
         $url = $config->getUrl();
         if (!empty($uriFragments)) {
             foreach ($uriFragments as $name => $value) {
                 $url = str_replace(':' . $name, $value, $url);
             }
         }
+
+        $options = $this->getRequestOptions($config, $headers, $query, $payload);
 
         $guzzleOptions = [];
         if ($config->shouldCache()) {
@@ -178,11 +131,12 @@ abstract class HttpSenderAbstract extends ActionAbstract
             $guzzleOptions['handler'] = $stack;
         }
 
-        $client      = $this->client ?? new Client($guzzleOptions);
-        $response    = $client->request($method, $url, $options);
+        $client = $this->client ?? new Client($guzzleOptions);
+        $response = $client->request($method, $url, $options);
+
         $contentType = $response->getHeaderLine('Content-Type');
-        $response    = $response->withoutHeader('Content-Type');
-        $response    = $response->withoutHeader('Content-Length');
+        $response = $response->withoutHeader('Content-Type');
+        $response = $response->withoutHeader('Content-Length');
 
         foreach (self::HOP_BY_HOP_HEADERS as $headerName) {
             if ($response->hasHeader($headerName)) {
@@ -210,6 +164,37 @@ abstract class HttpSenderAbstract extends ActionAbstract
             $response->getHeaders(),
             $data
         );
+    }
+
+    abstract protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration): array;
+
+    private function getRequestOptions(RequestConfig $config, array $headers, ?array $query, mixed $payload): array
+    {
+        $configuredQuery = $config->getQuery();
+        if (!empty($configuredQuery)) {
+            $query = array_merge($query, $configuredQuery);
+        }
+
+        $options = [
+            'headers' => $headers,
+            'query' => $query,
+            'http_errors' => false,
+        ];
+
+        $version = $config->getVersion();
+        if (!empty($version)) {
+            $options['version'] = $version;
+        }
+
+        if ($config->getType() == self::TYPE_FORM) {
+            $options['form_params'] = $payload instanceof \JsonSerializable ? Transformer::toArray($payload) : null;
+        } elseif ($config->getType() == self::TYPE_BINARY) {
+            $options['body'] = $payload;
+        } else {
+            $options['json'] = $payload;
+        }
+
+        return $options;
     }
 
     private function isJson(?string $contentType): bool

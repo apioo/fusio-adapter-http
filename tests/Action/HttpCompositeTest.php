@@ -36,22 +36,24 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  * @license http://www.apache.org/licenses/LICENSE-2.0
  * @link    https://www.fusio-project.org/
  */
-class HttpCompositeActionTest extends HttpActionTestCase
+class HttpCompositeTest extends HttpActionTestCase
 {
     protected function getActionClass(): string
     {
         return HttpComposition::class;
     }
 
-    protected function getConfiguration(string $url, ?string $type = null): array
+    protected function getConfiguration(string $url, ?string $type = null, ?string $authorization = null, ?bool $cache = false): array
     {
         return [
             'url' => [$url],
             'type' => $type,
+            'authorization' => $authorization,
+            'cache' => $cache ? 1 : 0,
         ];
     }
 
-    protected function getExpectedJson(string $url)
+    protected function getExpectedJson(string $url): string
     {
         return \json_encode([
             $url => [
@@ -61,7 +63,7 @@ class HttpCompositeActionTest extends HttpActionTestCase
         ]);
     }
 
-    protected function getExpectedXml(string $url)
+    protected function getExpectedXml(string $url): string|array
     {
         return [
             $url => '<foo>response</foo>'

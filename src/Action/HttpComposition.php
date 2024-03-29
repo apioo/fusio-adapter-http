@@ -37,7 +37,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.apache.org/licenses/LICENSE-2.0
  * @link    https://www.fusio-project.org/
  */
-class HttpComposition extends HttpSenderAbstract implements ConfigurableInterface
+class HttpComposition extends HttpProxyAbstract implements ConfigurableInterface
 {
     public function getName(): string
     {
@@ -56,8 +56,9 @@ class HttpComposition extends HttpSenderAbstract implements ConfigurableInterfac
 
         foreach ($urls as $url) {
             $response = $this->send(
-                RequestConfig::fromConfiguration($url, $configuration),
+                RequestConfig::forProxy($url, $configuration),
                 $request,
+                $configuration,
                 $context
             );
 

@@ -20,8 +20,7 @@
 
 namespace Fusio\Adapter\Http;
 
-use Fusio\Engine\AdapterInterface;
-use Fusio\Engine\Exception\ConfigurationException;
+use Fusio\Adapter\Http\Action\HttpSenderAbstract;
 use Fusio\Engine\ParametersInterface;
 
 /**
@@ -38,15 +37,17 @@ class RequestConfig
     private ?string $version;
     private ?string $authorization;
     private ?array $query;
+    private mixed $payload;
     private bool $cache;
 
-    public function __construct(string $url, ?string $type = null, ?string $version = null, ?string $authorization = null, ?array $query = null, bool $cache = false)
+    public function __construct(string $url, ?string $type = null, ?string $version = null, ?string $authorization = null, ?array $query = null, mixed $payload = null, bool $cache = false)
     {
         $this->url = $url;
         $this->type = $type;
         $this->version = $version;
         $this->authorization = $authorization;
         $this->query = $query;
+        $this->payload = $payload;
         $this->cache = $cache;
     }
 
@@ -75,12 +76,17 @@ class RequestConfig
         return $this->query;
     }
 
+    public function getPayload(): mixed
+    {
+        return $this->payload;
+    }
+
     public function shouldCache(): bool
     {
         return $this->cache;
     }
 
-    public static function fromConfiguration(string $url, ParametersInterface $configuration): self
+    public static function forProxy(string $url, ParametersInterface $configuration): self
     {
         $type = $configuration->get('type');
         $version = $configuration->get('version');
@@ -94,6 +100,23 @@ class RequestConfig
             parse_str($rawQuery, $query);
         }
 
-        return new self($url, $type, $version, $authorization, $query, !empty($cache));
+        return new self($url, $type, $version, $authorization, $query, null, !empty($cache));
+    }
+
+    public static function forRaw(string $url, ParametersInterface $configuration): self
+    {
+        $type = HttpSenderAbstract::TYPE_BINARY;
+        $version = $configuration->get('version');
+        $body = $configuration->get('body');
+        $cache = $configuration->get('cache');
+
+        $rawQuery = $configuration->get('query');
+        $query = null;
+        if (!empty($rawQuery)) {
+            $query = [];
+            parse_str($rawQuery, $query);
+        }
+
+        return new self($url, $type, $version, null, $query, $body, !empty($cache));
     }
 }

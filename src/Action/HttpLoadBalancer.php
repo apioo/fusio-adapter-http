@@ -37,7 +37,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.apache.org/licenses/LICENSE-2.0
  * @link    https://www.fusio-project.org/
  */
-class HttpLoadBalancer extends HttpSenderAbstract implements ConfigurableInterface
+class HttpLoadBalancer extends HttpProxyAbstract implements ConfigurableInterface
 {
     public function getName(): string
     {
@@ -57,8 +57,9 @@ class HttpLoadBalancer extends HttpSenderAbstract implements ConfigurableInterfa
         }
 
         return $this->send(
-            RequestConfig::fromConfiguration($url, $configuration),
+            RequestConfig::forProxy($url, $configuration),
             $request,
+            $configuration,
             $context
         );
     }
