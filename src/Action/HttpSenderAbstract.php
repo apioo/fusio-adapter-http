@@ -172,7 +172,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
     {
         $configuredQuery = $config->getQuery();
         if (!empty($configuredQuery)) {
-            $query = array_merge($query, $configuredQuery);
+            $query = array_merge($query ?? [], $configuredQuery);
         }
 
         $options = [
