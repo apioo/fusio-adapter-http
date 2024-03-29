@@ -75,7 +75,6 @@ class HttpRaw extends HttpSenderAbstract
         $builder->add($elementFactory->newSelect('method', 'Method', self::METHODS, 'The HTTP method'));
         $builder->add($elementFactory->newInput('url', 'URL', 'text', 'An url to the HTTP endpoint'));
         $builder->add($elementFactory->newMap('headers', 'Headers', 'text', 'The HTTP headers'));
-        $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
         $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional HTTP protocol which you want to send to the endpoint.'));
         $builder->add($elementFactory->newInput('query', 'Query', 'text', 'Optional fix query parameters which are attached to the url.'));
         $builder->add($elementFactory->newSelect('cache', 'Cache', self::CACHE, 'Optional consider HTTP cache headers.'));
