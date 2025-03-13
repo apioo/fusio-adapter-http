@@ -199,13 +199,14 @@ abstract class HttpSenderAbstract extends ActionAbstract
 
     private function isJson(?string $contentType): bool
     {
-        if (!empty($contentType)) {
-            try {
-                return MediaType\Json::isMediaType(MediaType::parse($contentType));
-            } catch (\InvalidArgumentException $e) {
-            }
+        if (empty($contentType)) {
+            return false;
         }
 
-        return false;
+        try {
+            return MediaType\Json::isMediaType(MediaType::parse($contentType));
+        } catch (\InvalidArgumentException $e) {
+            return false;
+        }
     }
 }
