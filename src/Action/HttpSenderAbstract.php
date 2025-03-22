@@ -223,7 +223,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
             $options['multipart'] = $parts;
         } else {
             if ($config->getType() == self::TYPE_FORM) {
-                $options['form_params'] = $payload instanceof \JsonSerializable ? Transformer::toArray($payload) : null;
+                $options['form_params'] = $payload instanceof \JsonSerializable ? Transformer::toArray($payload) : $payload;
             } elseif ($config->getType() == self::TYPE_BINARY) {
                 $contentType = 'application/octet-stream';
                 $options['body'] = $payload;
