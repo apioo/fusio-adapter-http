@@ -106,7 +106,9 @@ class RequestConfig
     public static function forRaw(string $url, ParametersInterface $configuration): self
     {
         $type = HttpSenderAbstract::TYPE_TEXT;
-        $contentType = $headers['content-type'] ?? null;
+
+        $headers = $configuration->get('headers');
+        $contentType = is_array($headers) && isset($headers['content-type']) ? $headers['content-type'] : null;
         if (!empty($contentType)) {
             $type = self::guessTypeForContentType($contentType);
         }
