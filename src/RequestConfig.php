@@ -105,7 +105,12 @@ class RequestConfig
 
     public static function forRaw(string $url, ParametersInterface $configuration): self
     {
-        $type = HttpSenderAbstract::TYPE_BINARY;
+        $type = HttpSenderAbstract::TYPE_TEXT;
+        $contentType = $headers['content-type'] ?? null;
+        if (!empty($contentType)) {
+            $type = self::guessTypeForContentType($contentType);
+        }
+
         $version = $configuration->get('version');
         $body = $configuration->get('body');
         $cache = $configuration->get('cache');
@@ -118,5 +123,16 @@ class RequestConfig
         }
 
         return new self($url, $type, $version, null, $query, $body, !empty($cache));
+    }
+
+    private static function guessTypeForContentType(string $contentType): ?string
+    {
+        foreach (HttpSenderAbstract::CONTENT_TYPE as $value) {
+            if (str_contains($contentType, $value)) {
+                return $value;
+            }
+        }
+
+        return HttpSenderAbstract::TYPE_TEXT;
     }
 }
