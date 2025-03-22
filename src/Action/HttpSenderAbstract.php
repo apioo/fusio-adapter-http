@@ -25,18 +25,19 @@ use Fusio\Adapter\Http\RequestConfig;
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\Request\HttpRequestContext;
-use Fusio\Engine\Request\RequestContextInterface;
 use Fusio\Engine\RequestInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Utils;
 use Kevinrob\GuzzleCache\CacheMiddleware;
 use Kevinrob\GuzzleCache\Storage\Psr16CacheStorage;
 use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
+use PSX\Data\Multipart\File;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\MediaType;
 use PSX\Record\Transformer;
+use PSX\Data\Body;
 
 /**
  * HttpSenderAbstract
@@ -47,9 +48,12 @@ use PSX\Record\Transformer;
  */
 abstract class HttpSenderAbstract extends ActionAbstract
 {
-    public const TYPE_JSON = 'application/json';
-    public const TYPE_FORM = 'application/x-www-form-urlencoded';
     public const TYPE_BINARY = 'application/octet-stream';
+    public const TYPE_FORM = 'application/x-www-form-urlencoded';
+    public const TYPE_JSON = 'application/json';
+    public const TYPE_MULTIPART = 'multipart/form-data';
+    public const TYPE_TEXT = 'text/plain';
+    public const TYPE_XML = 'application/xml';
 
     public const HTTP_1_0 = '1.0';
     public const HTTP_1_1 = '1.1';
@@ -57,8 +61,12 @@ abstract class HttpSenderAbstract extends ActionAbstract
     public const HTTP_3_0 = '3.0';
 
     protected const CONTENT_TYPE = [
-        self::TYPE_JSON => self::TYPE_JSON,
+        self::TYPE_BINARY => self::TYPE_BINARY,
         self::TYPE_FORM => self::TYPE_FORM,
+        self::TYPE_JSON => self::TYPE_JSON,
+        self::TYPE_MULTIPART => self::TYPE_MULTIPART,
+        self::TYPE_TEXT => self::TYPE_TEXT,
+        self::TYPE_XML => self::TYPE_XML,
     ];
 
     protected const VERSION = [
@@ -175,34 +183,79 @@ abstract class HttpSenderAbstract extends ActionAbstract
             $query = array_merge($query ?? [], $configuredQuery);
         }
 
-        $options = [
-            'headers' => $headers,
-            'query' => $query,
-            'http_errors' => false,
-        ];
+        $contentType = null;
+        $options = [];
+        if ($payload instanceof \DOMDocument) {
+            $contentType = 'application/xml';
+            $options['body'] = $payload->saveXML();
+        } elseif ($payload instanceof StreamInterface) {
+            $contentType = 'application/octet-stream';
+            $options['body'] = $payload;
+        } elseif (is_string($payload)) {
+            $contentType = 'text/plain';
+            $options['body'] = $payload;
+        } elseif ($payload instanceof Body\Json) {
+            $options['json'] = $payload->getAll();
+        } elseif ($payload instanceof Body\Form) {
+            $options['form_params'] = $payload->getAll();
+        } elseif ($payload instanceof Body\Multipart) {
+            $parts = [];
+            foreach ($payload->getAll() as $name => $part) {
+                if ($part instanceof File) {
+                    $tmpName = $part->getTmpName();
+                    if ($tmpName === null || !is_file($tmpName)) {
+                        continue;
+                    }
+
+                    $parts[] = [
+                        'name' => $name,
+                        'contents' => Utils::tryFopen($tmpName, 'r'),
+                        'filename' => $part->getName(),
+                    ];
+                } elseif (is_string($part)) {
+                    $parts[] = [
+                        'name' => $name,
+                        'contents' => $part,
+                    ];
+                }
+            }
+
+            $options['multipart'] = $parts;
+        } else {
+            if ($config->getType() == self::TYPE_FORM) {
+                $options['form_params'] = $payload instanceof \JsonSerializable ? Transformer::toArray($payload) : null;
+            } elseif ($config->getType() == self::TYPE_BINARY) {
+                $contentType = 'application/octet-stream';
+                $options['body'] = $payload;
+            } elseif ($config->getType() == self::TYPE_TEXT) {
+                $contentType = 'text/plain';
+                $options['body'] = $payload;
+            } elseif ($config->getType() == self::TYPE_XML) {
+                $contentType = 'application/xml';
+                $options['body'] = $payload;
+            } else {
+                $options['json'] = $payload;
+            }
+        }
+
+        if (!isset($headers['content-type']) && $contentType !== null) {
+            $headers['content-type'] = $contentType;
+        }
+
+        $options['headers'] = $headers;
+        $options['query'] = $query;
+        $options['http_errors'] = false;
 
         $version = $config->getVersion();
         if (!empty($version)) {
             $options['version'] = $version;
         }
 
-        if ($config->getType() == self::TYPE_FORM) {
-            $options['form_params'] = $payload instanceof \JsonSerializable ? Transformer::toArray($payload) : null;
-        } elseif ($config->getType() == self::TYPE_BINARY) {
-            $options['body'] = $payload;
-        } else {
-            $options['json'] = $payload;
-        }
-
         return $options;
     }
 
-    private function isJson(?string $contentType): bool
+    private function isJson(string $contentType): bool
     {
-        if (empty($contentType)) {
-            return false;
-        }
-
         try {
             return MediaType\Json::isMediaType(MediaType::parse($contentType));
         } catch (\InvalidArgumentException $e) {
