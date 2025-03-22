@@ -61,7 +61,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
     public const HTTP_2_0 = '2.0';
     public const HTTP_3_0 = '3.0';
 
-    public const CONTENT_TYPE = [
+    protected const CONTENT_TYPE = [
         self::TYPE_BINARY => self::TYPE_BINARY,
         self::TYPE_FORM => self::TYPE_FORM,
         self::TYPE_JSON => self::TYPE_JSON,
