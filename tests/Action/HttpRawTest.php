@@ -96,6 +96,7 @@ class HttpRawTest extends HttpTestCase
             'accept' => ['application/json, application/x-www-form-urlencoded;q=0.9, */*;q=0.8'],
             'user-agent' => ['Fusio Adapter-HTTP v' . InstalledVersions::getVersion('fusio/adapter-http')],
             'X-Foo' => ['Bar'],
+            'content-type' => ['text/plain'],
         ];
 
         $this->assertEquals('POST', $transaction['request']->getMethod());
