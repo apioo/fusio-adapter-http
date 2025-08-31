@@ -33,12 +33,12 @@ use Kevinrob\GuzzleCache\CacheMiddleware;
 use Kevinrob\GuzzleCache\Storage\Psr16CacheStorage;
 use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
 use Psr\Http\Message\StreamInterface;
+use PSX\Data\Body;
 use PSX\Data\Multipart\File;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception\BadRequestException;
 use PSX\Http\MediaType;
 use PSX\Record\Transformer;
-use PSX\Data\Body;
 
 /**
  * HttpSenderAbstract
@@ -56,11 +56,6 @@ abstract class HttpSenderAbstract extends ActionAbstract
     public const TYPE_TEXT = 'text/plain';
     public const TYPE_XML = 'application/xml';
 
-    public const HTTP_1_0 = '1.0';
-    public const HTTP_1_1 = '1.1';
-    public const HTTP_2_0 = '2.0';
-    public const HTTP_3_0 = '3.0';
-
     protected const CONTENT_TYPE = [
         self::TYPE_BINARY => self::TYPE_BINARY,
         self::TYPE_FORM => self::TYPE_FORM,
@@ -68,18 +63,6 @@ abstract class HttpSenderAbstract extends ActionAbstract
         self::TYPE_MULTIPART => self::TYPE_MULTIPART,
         self::TYPE_TEXT => self::TYPE_TEXT,
         self::TYPE_XML => self::TYPE_XML,
-    ];
-
-    protected const VERSION = [
-        self::HTTP_1_0 => self::HTTP_1_0,
-        self::HTTP_1_1 => self::HTTP_1_1,
-        self::HTTP_2_0 => self::HTTP_2_0,
-        self::HTTP_3_0 => self::HTTP_3_0,
-    ];
-
-    protected const CACHE = [
-        0 => 'No',
-        1 => 'Yes',
     ];
 
     protected const HOP_BY_HOP_HEADERS = [
@@ -100,7 +83,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
         $this->client = $client;
     }
 
-    public function send(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
+    public function send(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context, ?Client $client = null): HttpResponseInterface
     {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
@@ -133,14 +116,17 @@ abstract class HttpSenderAbstract extends ActionAbstract
 
         $options = $this->getRequestOptions($config, $headers, $query, $payload);
 
-        $guzzleOptions = [];
-        if ($config->shouldCache()) {
-            $stack = HandlerStack::create();
-            $stack->push(new CacheMiddleware(new PrivateCacheStrategy(new Psr16CacheStorage($this->cache))), 'cache');
-            $guzzleOptions['handler'] = $stack;
+        if (!$client instanceof Client) {
+            $guzzleOptions = [];
+            if ($config->shouldCache()) {
+                $stack = HandlerStack::create();
+                $stack->push(new CacheMiddleware(new PrivateCacheStrategy(new Psr16CacheStorage($this->cache))), 'cache');
+                $guzzleOptions['handler'] = $stack;
+            }
+
+            $client = $this->client ?? new Client($guzzleOptions);
         }
 
-        $client = $this->client ?? new Client($guzzleOptions);
         $response = $client->request($method, $url, $options);
 
         $contentType = $response->getHeaderLine('Content-Type');
@@ -176,6 +162,21 @@ abstract class HttpSenderAbstract extends ActionAbstract
     }
 
     abstract protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration): array;
+
+    protected function getClient(ParametersInterface $configuration): ?Client
+    {
+        $connectionName = $configuration->get('connection');
+        if (empty($connectionName)) {
+            return null;
+        }
+
+        $connection = $this->connector->getConnection($connectionName);
+        if (!$connection instanceof Client) {
+            return null;
+        }
+
+        return $connection;
+    }
 
     private function getRequestOptions(RequestConfig $config, array $headers, ?array $query, mixed $payload): array
     {

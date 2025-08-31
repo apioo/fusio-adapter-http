@@ -55,17 +55,17 @@ class HttpProcessor extends HttpProxyAbstract implements ConfigurableInterface
             RequestConfig::forProxy($url, $configuration),
             $request,
             $configuration,
-            $context
+            $context,
+            $this->getClient($configuration)
         );
     }
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
-        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'An url to the HTTP endpoint'));
-        $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint.'));
-        $builder->add($elementFactory->newSelect('version', 'HTTP Version', self::VERSION, 'Optional HTTP protocol which you want to send to the endpoint.'));
-        $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint.'));
-        $builder->add($elementFactory->newInput('query', 'Query', 'text', 'Optional fix query parameters which are attached to the url.'));
-        $builder->add($elementFactory->newSelect('cache', 'Cache', self::CACHE, 'Optional consider HTTP cache headers.'));
+        $builder->add($elementFactory->newConnection('connection', 'Connection', 'The HTTP connection which should be used, this is optional in case you provide an absolute url'));
+        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'A url to the HTTP endpoint, this gets resolved against the connection base url so relativ urls like <code>/foo/bar</code> are possible'));
+        $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint'));
+        $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint'));
+        $builder->add($elementFactory->newInput('query', 'Query', 'text', 'Optional query parameters i.e. <code>foo=bar&bar=foo</code>'));
     }
 }
