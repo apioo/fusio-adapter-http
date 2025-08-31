@@ -87,7 +87,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
     {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
-        [$method, $uriFragments, $query, $headers, $payload] = $this->getRequestValues($config, $request, $configuration);
+        [$method, $uriFragments, $query, $headers, $payload] = $this->getRequestValues($config, $request, $configuration, $context);
 
         $headers['x-fusio-operation-id'] = '' . $context->getOperationId();
         $headers['x-fusio-user-anonymous'] = $context->getUser()->isAnonymous() ? '1' : '0';
@@ -161,7 +161,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
         );
     }
 
-    abstract protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration): array;
+    abstract protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): array;
 
     protected function getClient(ParametersInterface $configuration): ?Client
     {

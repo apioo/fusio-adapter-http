@@ -81,7 +81,7 @@ class HttpRaw extends HttpSenderAbstract
         $builder->add($elementFactory->newTextArea('body', 'Body', 'text', 'The HTTP body'));
     }
 
-    protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration): array
+    protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): array
     {
         $headers = $configuration->get('headers');
         if (!is_array($headers)) {
@@ -91,6 +91,7 @@ class HttpRaw extends HttpSenderAbstract
         $templateContext = [
             'payload' => $request->getPayload(),
             'arguments' => $request->getArguments(),
+            'context' => $context,
         ];
 
         $requestContext = $request->getContext();

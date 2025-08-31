@@ -21,6 +21,7 @@
 namespace Fusio\Adapter\Http\Action;
 
 use Fusio\Adapter\Http\RequestConfig;
+use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Request\HttpRequestContext;
 use Fusio\Engine\RequestInterface;
@@ -34,7 +35,7 @@ use Fusio\Engine\RequestInterface;
  */
 abstract class HttpProxyAbstract extends HttpSenderAbstract
 {
-    protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration): array
+    protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): array
     {
         $requestContext = $request->getContext();
         if ($requestContext instanceof HttpRequestContext) {
