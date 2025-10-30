@@ -100,15 +100,20 @@ class HttpRaw extends HttpSenderAbstract
             $templateContext['query'] = $requestContext->getRequest()->getUri()->getParameters();
         }
 
-        $loader = new ArrayLoader(['body' => $configuration->get('body')]);
-        $twig = new Environment($loader, []);
+        $body = $configuration->get('body');
+        if (!empty($body)) {
+            $twig = new Environment(new ArrayLoader(['body' => $body]), []);
+            $payload = $twig->render('body', $templateContext);
+        } else {
+            $payload = null;
+        }
 
         return [
             $configuration->get('method'),
             $requestContext instanceof HttpRequestContext ? $requestContext->getParameters() : [],
             $config->getQuery(),
             $headers,
-            $twig->render('body', $templateContext)
+            $payload
         ];
     }
 }

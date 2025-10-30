@@ -187,67 +187,69 @@ abstract class HttpSenderAbstract extends ActionAbstract
 
         $contentType = null;
         $options = [];
-        if ($config->getType() === self::TYPE_BINARY) {
-            $contentType = 'application/octet-stream';
-            if ($payload instanceof StreamInterface) {
-                $options['body'] = $payload;
-            } elseif (is_string($payload)) {
-                $options['body'] = $payload;
-            } else {
-                throw new BadRequestException('Provided an invalid request payload');
-            }
-        } elseif ($config->getType() === self::TYPE_FORM) {
-            if ($payload instanceof \JsonSerializable) {
-                $options['form_params'] = Transformer::toArray($payload);
-            } elseif (is_array($payload)) {
-                $options['form_params'] = $payload;
-            } else {
-                throw new BadRequestException('Provided an invalid request payload');
-            }
-        } elseif ($config->getType() === self::TYPE_MULTIPART) {
-            if ($payload instanceof Body\Multipart) {
-                $parts = [];
-                foreach ($payload->getAll() as $name => $part) {
-                    if ($part instanceof File) {
-                        $tmpName = $part->getTmpName();
-                        if ($tmpName === null || !is_file($tmpName)) {
-                            continue;
-                        }
-
-                        $parts[] = [
-                            'name' => $name,
-                            'contents' => Utils::tryFopen($tmpName, 'r'),
-                            'filename' => $part->getName(),
-                        ];
-                    } elseif (is_string($part)) {
-                        $parts[] = [
-                            'name' => $name,
-                            'contents' => $part,
-                        ];
-                    }
+        if ($payload !== null) {
+            if ($config->getType() === self::TYPE_BINARY) {
+                $contentType = 'application/octet-stream';
+                if ($payload instanceof StreamInterface) {
+                    $options['body'] = $payload;
+                } elseif (is_string($payload)) {
+                    $options['body'] = $payload;
+                } else {
+                    throw new BadRequestException('Provided an invalid request payload');
                 }
+            } elseif ($config->getType() === self::TYPE_FORM) {
+                if ($payload instanceof \JsonSerializable) {
+                    $options['form_params'] = Transformer::toArray($payload);
+                } elseif (is_array($payload)) {
+                    $options['form_params'] = $payload;
+                } else {
+                    throw new BadRequestException('Provided an invalid request payload');
+                }
+            } elseif ($config->getType() === self::TYPE_MULTIPART) {
+                if ($payload instanceof Body\Multipart) {
+                    $parts = [];
+                    foreach ($payload->getAll() as $name => $part) {
+                        if ($part instanceof File) {
+                            $tmpName = $part->getTmpName();
+                            if ($tmpName === null || !is_file($tmpName)) {
+                                continue;
+                            }
 
-                $options['multipart'] = $parts;
+                            $parts[] = [
+                                'name' => $name,
+                                'contents' => Utils::tryFopen($tmpName, 'r'),
+                                'filename' => $part->getName(),
+                            ];
+                        } elseif (is_string($part)) {
+                            $parts[] = [
+                                'name' => $name,
+                                'contents' => $part,
+                            ];
+                        }
+                    }
+
+                    $options['multipart'] = $parts;
+                } else {
+                    throw new BadRequestException('Provided an invalid request payload');
+                }
+            } elseif ($config->getType() === self::TYPE_TEXT) {
+                if (is_string($payload)) {
+                    $options['body'] = $payload;
+                } else {
+                    throw new BadRequestException('Provided an invalid request payload');
+                }
+            } elseif ($config->getType() === self::TYPE_XML) {
+                $contentType = 'application/xml';
+                if ($payload instanceof \DOMDocument) {
+                    $options['body'] = $payload->saveXML();
+                } elseif (is_string($payload)) {
+                    $options['body'] = $payload;
+                } else {
+                    throw new BadRequestException('Provided an invalid request payload');
+                }
             } else {
-                throw new BadRequestException('Provided an invalid request payload');
+                $options['json'] = $payload;
             }
-        } elseif ($config->getType() === self::TYPE_TEXT) {
-            if (is_string($payload)) {
-                $options['body'] = $payload;
-            } else {
-                throw new BadRequestException('Provided an invalid request payload');
-            }
-        } elseif ($config->getType() === self::TYPE_XML) {
-            $contentType = 'application/xml';
-            if ($payload instanceof \DOMDocument) {
-                $options['body'] = $payload->saveXML();
-            } elseif (is_string($payload)) {
-                $options['body'] = $payload;
-            } else {
-                throw new BadRequestException('Provided an invalid request payload');
-            }
-        } else {
-            $options['json'] = $payload;
         }
 
         if (!isset($headers['content-type']) && $contentType !== null) {
