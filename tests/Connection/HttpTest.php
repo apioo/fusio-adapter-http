@@ -37,7 +37,7 @@ use GuzzleHttp\Client;
  */
 class HttpTest extends HttpTestCase
 {
-    public function testGetConnection()
+    public function testGetConnection(): void
     {
         /** @var Http $connectionFactory */
         $connectionFactory = $this->getConnectionFactory()->factory(Http::class);

@@ -36,10 +36,16 @@ class RequestConfig
     private ?string $type;
     private ?string $version;
     private ?string $authorization;
+    /**
+     * @var array<string, mixed>|null
+     */
     private ?array $query;
     private mixed $payload;
     private bool $cache;
 
+    /**
+     * @param array<string, mixed>|null $query
+     */
     public function __construct(string $url, ?string $type = null, ?string $version = null, ?string $authorization = null, ?array $query = null, mixed $payload = null, bool $cache = false)
     {
         $this->url = $url;
@@ -71,6 +77,9 @@ class RequestConfig
         return $this->authorization;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getQuery(): ?array
     {
         return $this->query;
@@ -100,6 +109,7 @@ class RequestConfig
             parse_str($rawQuery, $query);
         }
 
+        /** @phpstan-ignore argument.type */
         return new self($url, $type, $version, $authorization, $query, null, !empty($cache));
     }
 
@@ -117,6 +127,7 @@ class RequestConfig
             parse_str($rawQuery, $query);
         }
 
+        /** @phpstan-ignore argument.type */
         return new self($url, $type, $version, null, $query, $body, !empty($cache));
     }
 }

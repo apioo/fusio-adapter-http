@@ -83,6 +83,7 @@ class HttpRaw extends HttpSenderAbstract
 
     protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): array
     {
+        /** @var array<string, mixed> $headers */
         $headers = $configuration->get('headers');
         if (!is_array($headers)) {
             $headers = [];

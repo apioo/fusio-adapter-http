@@ -137,6 +137,9 @@ class Http extends ConnectionAbstract
         $builder->add($elementFactory->newMap('headers', 'Headers', 'text', 'Optional fix headers which are always provided'));
     }
 
+    /**
+     * @return array<string, string>|null
+     */
     private function getHeaders(ParametersInterface $configuration): ?array
     {
         $headers = $configuration->get('headers');

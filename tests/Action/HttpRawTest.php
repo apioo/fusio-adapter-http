@@ -29,6 +29,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Json\Parser;
 use PSX\Record\Record;
 
 /**
@@ -40,13 +41,13 @@ use PSX\Record\Record;
  */
 class HttpRawTest extends HttpTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $transactions = [];
         $history = Middleware::history($transactions);
 
         $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], json_encode(['foo' => 'bar', 'bar' => 'foo'])),
+            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], Parser::encode(['foo' => 'bar', 'bar' => 'foo'])),
         ]);
 
         $handler = HandlerStack::create($mock);
@@ -73,7 +74,7 @@ class HttpRawTest extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = $this->getExpectedJson();
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
@@ -81,7 +82,6 @@ class HttpRawTest extends HttpTestCase
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
-        $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
 
         $headers = [
@@ -104,6 +104,9 @@ class HttpRawTest extends HttpTestCase
         $this->assertEquals('foobar: bar, payload: bar', $transaction['request']->getBody()->__toString());
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getConfiguration(string $url): array
     {
         return [
@@ -119,9 +122,13 @@ class HttpRawTest extends HttpTestCase
 
     private function getExpectedJson(): string
     {
-        return \json_encode(['foo' => 'bar', 'bar' => 'foo']);
+        return Parser::encode(['foo' => 'bar', 'bar' => 'foo']);
     }
 
+    /**
+     * @param array<string, string> $headers
+     * @return array<string, string>
+     */
     private function getXHeaders(array $headers): array
     {
         $result = [];

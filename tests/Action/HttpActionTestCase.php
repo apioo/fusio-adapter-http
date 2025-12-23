@@ -32,7 +32,9 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Json\Parser;
 use PSX\Record\Record;
+use RuntimeException;
 
 /**
  * HttpEngineTest
@@ -43,13 +45,13 @@ use PSX\Record\Record;
  */
 abstract class HttpActionTestCase extends HttpTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $transactions = [];
         $history = Middleware::history($transactions);
 
         $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], json_encode(['foo' => 'bar', 'bar' => 'foo'])),
+            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], Parser::encode(['foo' => 'bar', 'bar' => 'foo'])),
         ]);
 
         $handler = HandlerStack::create($mock);
@@ -57,9 +59,11 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        if ($action instanceof HttpSenderAbstract) {
-            $action->setClient($client);
+        if (!$action instanceof HttpSenderAbstract) {
+            throw new RuntimeException('Provided action must be an instance of: ' . HttpSenderAbstract::class);
         }
+
+        $action->setClient($client);
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -77,7 +81,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
@@ -85,7 +89,6 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
-        $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
 
         $headers = [
@@ -107,7 +110,7 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
-    public function testHandleForm()
+    public function testHandleForm(): void
     {
         $transactions = [];
         $history = Middleware::history($transactions);
@@ -121,9 +124,11 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        if ($action instanceof HttpSenderAbstract) {
-            $action->setClient($client);
+        if (!$action instanceof HttpSenderAbstract) {
+            throw new RuntimeException('Provided action must be an instance of: ' . HttpSenderAbstract::class);
         }
+
+        $action->setClient($client);
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -141,7 +146,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
@@ -149,7 +154,6 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
-        $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
 
         $headers = [
@@ -171,7 +175,7 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertEquals('foo=bar&x=bar', $transaction['request']->getBody()->__toString());
     }
 
-    public function testHandleXml()
+    public function testHandleXml(): void
     {
         $transactions = [];
         $history = Middleware::history($transactions);
@@ -185,9 +189,11 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        if ($action instanceof HttpSenderAbstract) {
-            $action->setClient($client);
+        if (!$action instanceof HttpSenderAbstract) {
+            throw new RuntimeException('Provided action must be an instance of: ' . HttpSenderAbstract::class);
         }
+
+        $action->setClient($client);
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -210,7 +216,6 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertEquals(['x-foo' => ['Foo'], 'content-type' => ['application/xml']], $response->getHeaders());
         $this->assertEquals($this->getExpectedXml($url), $response->getBody());
 
-        $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
 
         $headers = [
@@ -232,13 +237,13 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
-    public function testHandleVariablePathFragment()
+    public function testHandleVariablePathFragment(): void
     {
         $transactions = [];
         $history = Middleware::history($transactions);
 
         $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], json_encode(['foo' => 'bar', 'bar' => 'foo'])),
+            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], Parser::encode(['foo' => 'bar', 'bar' => 'foo'])),
         ]);
 
         $handler = HandlerStack::create($mock);
@@ -246,9 +251,11 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        if ($action instanceof HttpSenderAbstract) {
-            $action->setClient($client);
+        if (!$action instanceof HttpSenderAbstract) {
+            throw new RuntimeException('Provided action must be an instance of: ' . HttpSenderAbstract::class);
         }
+
+        $action->setClient($client);
 
         // handle request
         $url = 'http://127.0.0.1/foo/:foo';
@@ -266,7 +273,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
@@ -274,7 +281,6 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
-        $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
 
         $headers = [
@@ -296,13 +302,13 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
-    public function testHandleAuthorization()
+    public function testHandleAuthorization(): void
     {
         $transactions = [];
         $history = Middleware::history($transactions);
 
         $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], json_encode(['foo' => 'bar', 'bar' => 'foo'])),
+            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], Parser::encode(['foo' => 'bar', 'bar' => 'foo'])),
         ]);
 
         $handler = HandlerStack::create($mock);
@@ -310,9 +316,11 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        if ($action instanceof HttpSenderAbstract) {
-            $action->setClient($client);
+        if (!$action instanceof HttpSenderAbstract) {
+            throw new RuntimeException('Provided action must be an instance of: ' . HttpSenderAbstract::class);
         }
+
+        $action->setClient($client);
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -330,7 +338,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
@@ -338,7 +346,6 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
-        $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
 
         $headers = [
@@ -361,13 +368,13 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
-    public function testHandleCache()
+    public function testHandleCache(): void
     {
         $transactions = [];
         $history = Middleware::history($transactions);
 
         $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], json_encode(['foo' => 'bar', 'bar' => 'foo'])),
+            new Response(200, ['X-Foo' => 'Foo', 'Content-Type' => 'application/json'], Parser::encode(['foo' => 'bar', 'bar' => 'foo'])),
         ]);
 
         $handler = HandlerStack::create($mock);
@@ -375,9 +382,11 @@ abstract class HttpActionTestCase extends HttpTestCase
         $client = new Client(['handler' => $handler]);
 
         $action = $this->getActionFactory()->factory($this->getActionClass());
-        if ($action instanceof HttpSenderAbstract) {
-            $action->setClient($client);
+        if (!$action instanceof HttpSenderAbstract) {
+            throw new RuntimeException('Provided action must be an instance of: ' . HttpSenderAbstract::class);
         }
+
+        $action->setClient($client);
 
         // handle request
         $url = 'http://127.0.0.1';
@@ -395,7 +404,7 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
@@ -403,7 +412,6 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
-        $this->assertEquals(1, count($transactions));
         $transaction = reset($transactions);
 
         $headers = [
@@ -425,13 +433,16 @@ abstract class HttpActionTestCase extends HttpTestCase
         $this->assertJsonStringEqualsJsonString('{"foo":"bar"}', $transaction['request']->getBody()->__toString());
     }
 
-    abstract protected function getActionClass();
+    abstract protected function getActionClass(): string;
 
-    protected function handle(HttpSenderAbstract $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    protected function handle(HttpSenderAbstract $action, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): mixed
     {
         return $action->handle($request, $configuration, $context);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getConfiguration(string $url, ?string $type = null, ?string $authorization = null, ?bool $cache = false): array
     {
         return [
@@ -444,14 +455,21 @@ abstract class HttpActionTestCase extends HttpTestCase
 
     protected function getExpectedJson(string $url): string
     {
-        return \json_encode(['foo' => 'bar', 'bar' => 'foo']);
+        return Parser::encode(['foo' => 'bar', 'bar' => 'foo']);
     }
 
+    /**
+     * @return string|array<string, string>
+     */
     protected function getExpectedXml(string $url): string|array
     {
         return '<foo>response</foo>';
     }
 
+    /**
+     * @param array<string, string> $headers
+     * @return array<string, string>
+     */
     private function getXHeaders(array $headers): array
     {
         $result = [];

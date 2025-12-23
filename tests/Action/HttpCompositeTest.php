@@ -28,6 +28,7 @@ use Fusio\Engine\Form\Container;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
+use PSX\Json\Parser;
 
 /**
  * HttpCompositeTest
@@ -43,6 +44,9 @@ class HttpCompositeTest extends HttpActionTestCase
         return HttpComposition::class;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getConfiguration(string $url, ?string $type = null, ?string $authorization = null, ?bool $cache = false): array
     {
         return [
@@ -55,7 +59,7 @@ class HttpCompositeTest extends HttpActionTestCase
 
     protected function getExpectedJson(string $url): string
     {
-        return \json_encode([
+        return Parser::encode([
             $url => [
                 'foo' => 'bar',
                 'bar' => 'foo'

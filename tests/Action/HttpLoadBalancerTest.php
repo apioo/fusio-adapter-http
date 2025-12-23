@@ -43,6 +43,9 @@ class HttpLoadBalancerTest extends HttpActionTestCase
         return HttpLoadBalancer::class;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getConfiguration(string $url, ?string $type = null, ?string $authorization = null, ?bool $cache = false): array
     {
         return [

@@ -156,11 +156,14 @@ abstract class HttpSenderAbstract extends ActionAbstract
 
         return $this->response->build(
             $response->getStatusCode(),
-            $response->getHeaders(),
+            /** @phpstan-ignore argument.type */ $response->getHeaders(),
             $data
         );
     }
 
+    /**
+     * @return array{string, array<string, mixed>|null, array<string, mixed>|null, array<string, mixed>, mixed}
+     */
     abstract protected function getRequestValues(RequestConfig $config, RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): array;
 
     protected function getClient(ParametersInterface $configuration): ?Client
@@ -178,6 +181,11 @@ abstract class HttpSenderAbstract extends ActionAbstract
         return $connection;
     }
 
+    /**
+     * @param array<string, mixed> $headers
+     * @param array<string, mixed>|null $query
+     * @return array<string, mixed>
+     */
     private function getRequestOptions(RequestConfig $config, array $headers, ?array $query, mixed $payload): array
     {
         $configuredQuery = $config->getQuery();
