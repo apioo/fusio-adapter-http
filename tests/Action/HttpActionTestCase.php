@@ -498,7 +498,7 @@ abstract class HttpActionTestCase extends HttpTestCase
         return '<foo>response</foo>';
     }
 
-    protected function getStreamBodyString(string $url, HttpResponseInterface $return): string|array
+    protected function getStreamBodyString(string $url, HttpResponseInterface $return): string
     {
         $body = $return->getBody();
         if ($body instanceof Stream) {

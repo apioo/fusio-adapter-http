@@ -99,7 +99,7 @@ class HttpComposition extends HttpProxyAbstract implements ConfigurableInterface
             $return = $body;
         }
 
-        if (is_string($return) && str_starts_with($contentType, 'application/json')) {
+        if (is_string($return) && str_starts_with($contentType ?? '', 'application/json')) {
             $return = Parser::decode($return);
         }
 

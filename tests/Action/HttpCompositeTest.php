@@ -84,7 +84,7 @@ class HttpCompositeTest extends HttpActionTestCase
         ]);
     }
 
-    protected function getStreamBodyString(string $url, HttpResponseInterface $return): string|array
+    protected function getStreamBodyString(string $url, HttpResponseInterface $return): string
     {
         $body = $return->getBody();
         if (is_array($body)) {
