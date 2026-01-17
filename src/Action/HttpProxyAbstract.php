@@ -25,6 +25,7 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Request\HttpRequestContext;
 use Fusio\Engine\RequestInterface;
+use PSX\Http\Http;
 
 /**
  * HttpProxyAbstract
@@ -40,7 +41,7 @@ abstract class HttpProxyAbstract extends HttpSenderAbstract
         $requestContext = $request->getContext();
         if ($requestContext instanceof HttpRequestContext) {
             $httpRequest = $requestContext->getRequest();
-            $exclude = array_merge(['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'content-type', 'host', 'user-agent'], self::HOP_BY_HOP_HEADERS);
+            $exclude = array_merge(['accept', 'accept-charset', 'accept-encoding', 'accept-language', 'authorization', 'content-type', 'host', 'user-agent'], Http::HOP_BY_HOP_HEADERS);
             $headers = $httpRequest->getHeaders();
             $headers = array_diff_key($headers, array_combine($exclude, array_fill(0, count($exclude), null)));
 
