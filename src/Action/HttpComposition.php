@@ -29,6 +29,9 @@ use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Http\Response as HttpResponse;
+use PSX\Http\Writer\Stream;
+use PSX\Json\Parser;
 
 /**
  * HttpComposition
@@ -63,11 +66,7 @@ class HttpComposition extends HttpProxyAbstract implements ConfigurableInterface
                 $this->getClient($configuration)
             );
 
-            foreach ($response->getHeaders() as $key => $value) {
-                $headers[$key] = $value;
-            }
-
-            $data[$url] = $response->getBody();
+            $data[$url] = $this->getStreamBodyString($response);
         }
 
         return $this->response->build(
@@ -84,5 +83,26 @@ class HttpComposition extends HttpProxyAbstract implements ConfigurableInterface
         $builder->add($elementFactory->newSelect('type', 'Content-Type', self::CONTENT_TYPE, 'The content type which you want to send to the endpoint'));
         $builder->add($elementFactory->newInput('authorization', 'Authorization', 'text', 'Optional a HTTP authorization header which gets passed to the endpoint'));
         $builder->add($elementFactory->newInput('query', 'Query', 'text', 'Optional query parameters i.e. <code>foo=bar&bar=foo</code>'));
+    }
+
+    private function getStreamBodyString(HttpResponseInterface $return): mixed
+    {
+        $contentType = $return->getHeader('Content-Type');
+
+        $body = $return->getBody();
+        if ($body instanceof Stream) {
+            $response = new HttpResponse();
+            $body->writeTo($response);
+
+            $return = (string) $response->getBody();
+        } else {
+            $return = $body;
+        }
+
+        if (is_string($return) && str_starts_with($contentType, 'application/json')) {
+            $return = Parser::decode($return);
+        }
+
+        return $return;
     }
 }
