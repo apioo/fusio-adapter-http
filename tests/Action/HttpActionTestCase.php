@@ -32,6 +32,8 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Http\Response as HttpResponse;
+use PSX\Http\Writer\Stream;
 use PSX\Json\Parser;
 use PSX\Record\Record;
 use RuntimeException;
@@ -81,12 +83,16 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = $this->getStreamBodyString($url, $response);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
+        if ($this instanceof HttpCompositeTest) {
+            $this->assertEquals([], $response->getHeaders());
+        } else {
+            $this->assertEquals(['x-foo' => 'Foo', 'content-type' => 'application/json'], $response->getHeaders());
+        }
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
         $transaction = reset($transactions);
@@ -146,13 +152,17 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = $this->getExpectedJson($url);
+        $actual = $this->getStreamBodyString($url, $response);
+        $expect = $this->getExpectedForm($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
-        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+        if ($this instanceof HttpCompositeTest) {
+            $this->assertEquals([], $response->getHeaders());
+        } else {
+            $this->assertEquals(['x-foo' => 'Foo', 'content-type' => 'application/x-www-form-urlencoded'], $response->getHeaders());
+        }
+        $this->assertEquals($expect, $actual, $actual);
 
         $transaction = reset($transactions);
 
@@ -211,10 +221,18 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
+        $actual = $this->getStreamBodyString($url, $response);
+        $expect = $this->getExpectedXml($url);
+
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(['x-foo' => ['Foo'], 'content-type' => ['application/xml']], $response->getHeaders());
-        $this->assertEquals($this->getExpectedXml($url), $response->getBody());
+        if ($this instanceof HttpCompositeTest) {
+            $this->assertEquals([], $response->getHeaders());
+            $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+        } else {
+            $this->assertEquals(['x-foo' => 'Foo', 'content-type' => 'application/xml'], $response->getHeaders());
+            $this->assertXmlStringEqualsXmlString($expect, $actual, $actual);
+        }
 
         $transaction = reset($transactions);
 
@@ -273,12 +291,16 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = $this->getStreamBodyString($url, $response);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
+        if ($this instanceof HttpCompositeTest) {
+            $this->assertEquals([], $response->getHeaders());
+        } else {
+            $this->assertEquals(['x-foo' => 'Foo', 'content-type' => 'application/json'], $response->getHeaders());
+        }
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
         $transaction = reset($transactions);
@@ -338,12 +360,16 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = $this->getStreamBodyString($url, $response);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
+        if ($this instanceof HttpCompositeTest) {
+            $this->assertEquals([], $response->getHeaders());
+        } else {
+            $this->assertEquals(['x-foo' => 'Foo', 'content-type' => 'application/json'], $response->getHeaders());
+        }
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
         $transaction = reset($transactions);
@@ -404,12 +430,16 @@ abstract class HttpActionTestCase extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = $this->getStreamBodyString($url, $response);
         $expect = $this->getExpectedJson($url);
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
+        if ($this instanceof HttpCompositeTest) {
+            $this->assertEquals([], $response->getHeaders());
+        } else {
+            $this->assertEquals(['x-foo' => 'Foo', 'content-type' => 'application/json'], $response->getHeaders());
+        }
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
         $transaction = reset($transactions);
@@ -458,12 +488,27 @@ abstract class HttpActionTestCase extends HttpTestCase
         return Parser::encode(['foo' => 'bar', 'bar' => 'foo']);
     }
 
-    /**
-     * @return string|array<string, string>
-     */
-    protected function getExpectedXml(string $url): string|array
+    protected function getExpectedForm(string $url): string
+    {
+        return http_build_query(['foo' => 'bar', 'bar' => 'foo'], '', '&');
+    }
+
+    protected function getExpectedXml(string $url): string
     {
         return '<foo>response</foo>';
+    }
+
+    protected function getStreamBodyString(string $url, HttpResponseInterface $return): string|array
+    {
+        $body = $return->getBody();
+        if ($body instanceof Stream) {
+            $response = new HttpResponse();
+            $body->writeTo($response);
+
+            return (string) $response->getBody();
+        } else {
+            return $body;
+        }
     }
 
     /**

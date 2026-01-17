@@ -29,8 +29,11 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Http\Stream\StringStream;
+use PSX\Http\Response as HttpResponse;
 use PSX\Json\Parser;
 use PSX\Record\Record;
+use PSX\Http\Writer\Stream;
 
 /**
  * HttpRawTest
@@ -74,12 +77,12 @@ class HttpRawTest extends HttpTestCase
             $this->getContext()
         );
 
-        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = $this->getStreamBodyString($response);
         $expect = $this->getExpectedJson();
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(['x-foo' => ['Foo']], $response->getHeaders());
+        $this->assertEquals(['x-foo' => 'Foo', 'content-type' => 'application/json'], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
 
         $transaction = reset($transactions);
@@ -123,6 +126,16 @@ class HttpRawTest extends HttpTestCase
     private function getExpectedJson(): string
     {
         return Parser::encode(['foo' => 'bar', 'bar' => 'foo']);
+    }
+
+    private function getStreamBodyString(HttpResponseInterface $return): string
+    {
+        $response = new HttpResponse();
+        $body = $return->getBody();
+        $this->assertInstanceOf(Stream::class, $body);
+        $body->writeTo($response);
+
+        return (string) $response->getBody();
     }
 
     /**

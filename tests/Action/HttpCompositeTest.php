@@ -28,6 +28,9 @@ use Fusio\Engine\Form\Container;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use Fusio\Engine\Test\EngineTestCaseTrait;
+use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Http\Response as HttpResponse;
+use PSX\Http\Writer\Stream;
 use PSX\Json\Parser;
 
 /**
@@ -67,10 +70,27 @@ class HttpCompositeTest extends HttpActionTestCase
         ]);
     }
 
-    protected function getExpectedXml(string $url): string|array
+    protected function getExpectedForm(string $url): string
     {
-        return [
+        return Parser::encode([
+            $url => http_build_query(['foo' => 'bar', 'bar' => 'foo'], '', '&'),
+        ]);
+    }
+
+    protected function getExpectedXml(string $url): string
+    {
+        return Parser::encode([
             $url => '<foo>response</foo>'
-        ];
+        ]);
+    }
+
+    protected function getStreamBodyString(string $url, HttpResponseInterface $return): string|array
+    {
+        $body = $return->getBody();
+        if (is_array($body)) {
+            $body = Parser::encode($body);
+        }
+
+        return $body;
     }
 }
