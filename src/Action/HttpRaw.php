@@ -95,7 +95,7 @@ class HttpRaw extends HttpSenderAbstract
             'context' => $context,
         ];
 
-        $queryParameters = $config->getQuery();
+        $queryParameters = $config->getQuery() ?? [];
 
         $requestContext = $request->getContext();
         if ($requestContext instanceof HttpRequestContext) {
