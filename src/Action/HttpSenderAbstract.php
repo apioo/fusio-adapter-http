@@ -65,17 +65,6 @@ abstract class HttpSenderAbstract extends ActionAbstract
         self::TYPE_XML => self::TYPE_XML,
     ];
 
-    protected const HOP_BY_HOP_HEADERS = [
-        'connection',
-        'keep-alive',
-        'proxy-authenticate',
-        'proxy-authorization',
-        'te',
-        'trailers',
-        'transfer-encoding',
-        'upgrade',
-    ];
-
     private ?Client $client = null;
 
     public function setClient(Client $client): void
@@ -129,36 +118,7 @@ abstract class HttpSenderAbstract extends ActionAbstract
 
         $response = $client->request($method, $url, $options);
 
-        $contentType = $response->getHeaderLine('Content-Type');
-        $response = $response->withoutHeader('Content-Type');
-        $response = $response->withoutHeader('Content-Length');
-
-        foreach (self::HOP_BY_HOP_HEADERS as $headerName) {
-            if ($response->hasHeader($headerName)) {
-                $response = $response->withoutHeader($headerName);
-            }
-        }
-
-        $body = (string) $response->getBody();
-
-        if ($this->isJson($contentType)) {
-            $data = json_decode($body);
-        } elseif (str_contains($contentType, self::TYPE_FORM)) {
-            $data = [];
-            parse_str($body, $data);
-        } else {
-            if (!empty($contentType)) {
-                $response = $response->withHeader('Content-Type', $contentType);
-            }
-
-            $data = $body;
-        }
-
-        return $this->response->build(
-            $response->getStatusCode(),
-            /** @phpstan-ignore argument.type */ $response->getHeaders(),
-            $data
-        );
+        return $this->response->proxy($response);
     }
 
     /**
