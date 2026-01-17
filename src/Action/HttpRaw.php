@@ -95,10 +95,14 @@ class HttpRaw extends HttpSenderAbstract
             'context' => $context,
         ];
 
+        $queryParameters = $config->getQuery();
+
         $requestContext = $request->getContext();
         if ($requestContext instanceof HttpRequestContext) {
+            $queryParameters = array_merge($requestContext->getRequest()->getUri()->getParameters(), $queryParameters);
+
             $templateContext['uriFragments'] = $requestContext->getParameters();
-            $templateContext['query'] = $requestContext->getRequest()->getUri()->getParameters();
+            $templateContext['query'] = $queryParameters;
         }
 
         $body = $configuration->get('body');
@@ -112,7 +116,7 @@ class HttpRaw extends HttpSenderAbstract
         return [
             $configuration->get('method'),
             $requestContext instanceof HttpRequestContext ? $requestContext->getParameters() : [],
-            $config->getQuery(),
+            $queryParameters,
             $headers,
             $payload
         ];
